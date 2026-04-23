@@ -1,0 +1,58 @@
+name: SarvSynth Data Pipeline
+
+on:
+  schedule:
+    - cron: '0 0 */4 * *' # Every 4 days
+  workflow_dispatch:
+    inputs:
+      num_patients:
+        description: 'Number of patients to generate'
+        required: true
+        default: '250'
+        type: string
+
+jobs:
+  data-pipeline:
+    runs-on: ubuntu-latest
+    
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+      PYTHONPATH: ${{ github.workspace }}
+
+    steps:
+      - name: 1. Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 2. Setup Java & Python
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10.12'
+
+      - name: 3. Cache Synthea
+        uses: actions/cache@v4
+        with:
+          path: ~/synthea
+          key: ${{ runner.os }}-synthea-v1
+
+      - name: 4. Install uv & Dependencies
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          uv sync
+
+      - name: 5. Generate Synthetic Data
+        run: |
+          chmod +x workflows/scripts/synthea-init.sh
+          ./workflows/scripts/synthea-init.sh ${{ github.event.inputs.num_patients || '250' }}
+
+      - name: 6. Run ETL Ingestion
+        run: uv run python3 -m workflows.etl_runner
+
+      - name: 7. Run Analytics
+        run: uv run python3 -m workflows.analytics_runner

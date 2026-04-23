@@ -3,7 +3,7 @@ set -e
 
 # --- Configuration ---
 NUMBER_OF_PATIENTS=${1:-150}
-PROJ_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+PROJ_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
 REPO_URL="https://github.com/synthetichealth/synthea.git"
 SYNTHEA_DIR="$HOME/synthea"
 DATASET_DIR="$PROJ_DIR/Datasets"

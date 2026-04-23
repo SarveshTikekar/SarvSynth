@@ -211,3 +211,6 @@ Datasets/
 
 #For node modules
 */node_modules
+
+#For synthea
+*/synthea/

@@ -11,8 +11,6 @@ class patientKPIS(BaseModel):
     married_rate: float = Field(0.0, description="Percentage of patients who are married")
     higher_education_rate: float = Field(0.0, description="Percentage of patients with a doctorate or higher education level")
 
-    historical_comparisons: Dict[str, Dict[str, float]] = Field(default_factory=dict, description="Nested dictionary for prevWeek, prevMonth, prevYear values for each metric")
-
 class patientMetrics(BaseModel):
     economic_dependence_ratio: int = 0
     cultural_diversity_score: int = 0 
