@@ -10,6 +10,10 @@ on:
         required: true
         default: '250'
         type: string
+      region:
+        description: 'State/Region to generate data for'
+        required: true
+        default: 'Massachusetts'
 
 jobs:
   data-pipeline:
@@ -49,7 +53,7 @@ jobs:
       - name: 5. Generate Synthetic Data
         run: |
           chmod +x workflows/scripts/synthea-init.sh
-          ./workflows/scripts/synthea-init.sh ${{ github.event.inputs.num_patients || '250' }}
+          ./workflows/scripts/synthea-init.sh ${{ github.event.inputs.num_patients || '250' }} ${{ github.event.inputs.region || 'Massachusetts' }}
 
       - name: 6. Run ETL Ingestion
         run: uv run python3 -m workflows.etl_runner

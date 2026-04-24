@@ -3,6 +3,7 @@ set -e
 
 # --- Configuration ---
 NUMBER_OF_PATIENTS=${1:-150}
+STATE=${2:-Massachusetts}
 PROJ_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
 REPO_URL="https://github.com/synthetichealth/synthea.git"
 SYNTHEA_DIR="$HOME/synthea"
@@ -49,7 +50,7 @@ fi
 mkdir -p "$DATASET_DIR"
 cd "$SYNTHEA_DIR"
 
-log_msg "🏃 Executing Synthea..."
-./run_synthea -p "$NUMBER_OF_PATIENTS" | tee -a "$LOG_FILE"
+log_msg "🏃 Executing Synthea for $NUMBER_OF_PATIENTS patients in $STATE..."
+./run_synthea -p "$NUMBER_OF_PATIENTS" "$STATE" | tee -a "$LOG_FILE"
 
 log_msg "✅ Success! Data generated in: $DATASET_DIR"
