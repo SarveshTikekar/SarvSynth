@@ -25,6 +25,6 @@ class patientAdvancedMetrics(BaseModel):
     mortality_hazard_by_quintiles: Dict[str, List[Tuple[str, List[int], float]]] = Field(default_factory=dict)
     
     # Pre-calculated trends for the API
-    economic_dependence_trend: List[Dict[int, int]] = Field(default_factory=list)
-    cultural_diversity_trend: List[Dict[int, int]] = Field(default_factory=list)
-    mortality_rate_trend: List[Dict[int, float]] = Field(default_factory=list)
+    economic_dependence_trend: List[Dict[str, Any]] = Field(default_factory=list)
+    cultural_diversity_trend: List[Dict[str, Any]] = Field(default_factory=list)
+    mortality_rate_trend: List[Dict[str, Any]] = Field(default_factory=list)
