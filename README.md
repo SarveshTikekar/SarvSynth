@@ -1,62 +1,73 @@
-# SarvSynth
+# SarvSynth: Clinical Intelligence and Health Analytics Platform
 
-SarvSynth is a high-performance, automated data pipeline designed for the ingestion, transformation, and analysis of synthetic medical records. The system orchestrates a complex workflow involving data generation via Synthea, distributed processing with Apache Spark, and cloud synchronization with Supabase.
+SarvSynth is a high-performance clinical analytics infrastructure designed for hospital administrators and medical practitioners. The platform transforms synthetic FHIR-standard patient data into actionable intelligence through a multi-stage ETL pipeline and a specialized medical-grade executive interface.
 
-## Architecture Overview
+## Project Overview
 
-The system is built on a decoupled, asynchronous architecture to ensure scalability and reliability:
+The SarvSynth platform provides an integrated perspective on hospital operations, population health dynamics, and longitudinal pathological trends. The system is architected to process complex clinical datasets while maintaining a premium, distraction-free environment optimized for high-stakes healthcare decision-making.
 
-1. Data Generation: Synthea is utilized to generate realistic, longitudinal patient records in CSV format.
-2. ETL Engine: A PySpark-based processing layer handles data cleaning, regex-based field extraction, and ISO-8601 date standardization.
-3. Cloud Synchronization: An asynchronous Supabase client manages high-speed batch ingestion into a PostgreSQL backend.
-4. Analytics Engine: A secondary Spark pipeline computes advanced clinical and demographic metrics, storing results as optimized JSONB structures in a centralized metrics store.
-5. Orchestration: GitHub Actions automates the entire lifecycle, providing scheduled updates and manual trigger capabilities.
+## Core Capabilities
 
-## Key Features
+- **Executive Intelligence**: Unified aggregate statistics across all clinical and administrative departments.
+- **Population Health Analytics**: Granular analysis of patient demographics, socioeconomic dependence, and mortality risk modeling.
+- **Pathological Tracking**: Longitudinal monitoring of condition incidence, recurrence intervals, and recovery efficacy.
+- **Operational Diagnostics**: Revenue cycle analysis, encounter throughput metrics, and practitioner engagement diagnostics.
+- **Refined Interface Design**: Professional typography utilizing Signika and Zalando Sans, medical-standard iconography, and seamless state transitions.
 
-- Distributed Processing: Utilizes Apache Spark for efficient transformation of large-scale medical datasets.
-- Asynchronous I/O: Implements non-blocking database operations to maximize throughput during cloud ingestion.
-- Polymorphic Metrics Store: Uses a JSONB-based schema for analytics, allowing for flexible storage of complex clinical KPIs without schema migrations.
-- Automated Lifecycle: Fully integrated CI/CD pipeline for data generation, processing, and analytics.
+## Technical Architecture
 
-## Directory Structure
+- **Frontend**: React (Vite) utilizing Tailwind CSS with Recharts and ECharts for high-density data visualization.
+- **Backend**: Asynchronous Flask API utilizing dependency injection for secure and efficient Supabase connectivity.
+- **Data Engineering**: PySpark-driven ETL and analytics pipelines for high-throughput metric derivation.
+- **Data Persistence**: Supabase (PostgreSQL) for structured clinical records and pre-calculated analytical metrics.
+- **Deployment**: Native configuration for Vercel Serverless Functions and static asset hosting.
 
-- .github/workflows/: Contains the GitHub Actions CI/CD configuration.
-- workflows/etl_pipeline/: Core ETL logic and Pydantic data models.
-- workflows/analytics_pipeline/: Spark logic for clinical and demographic metrics.
-- workflows/scripts/: Utility scripts for environment initialization and data generation.
-- supabase/migrations/: Database schema definitions and permission sets.
+## Deployment and Installation
 
-## Technical Specifications
+### 1. Local Development Environment
 
-- Language: Python 3.10+
-- Processing: Apache Spark 3.5+
-- Database: Supabase (PostgreSQL)
-- Dependency Management: uv
-- Infrastructure: GitHub-hosted runners (Ubuntu Latest, 4-vCPU, 16GB RAM)
+**System Requirements**: Python 3.12+, Node.js 18+, Java (required for PySpark execution).
 
-## Configuration
+1. **Dependency Installation**:
+   ```bash
+   # Backend and Analytics Infrastructure
+   uv sync
+   
+   # Frontend Application
+   cd synthea-frontend && npm install
+   ```
 
-The system requires the following environment variables for cloud connectivity. These should be defined in a .env file for local use or as Repository Secrets in GitHub Actions:
+2. **Configuration**:
+   Establish a `.env` file in the repository root with the following parameters:
+   ```env
+   SUPABASE_URL=your_endpoint_url
+   SUPABASE_ANON_KEY=your_access_key
+   VITE_APP_API_URL=http://127.0.0.1:3001
+   ```
 
+3. **Service Execution**:
+   ```bash
+   # Execute Flask API (Default Port: 3001)
+   python -m api.main
+   
+   # Execute Vite Development Server
+   cd synthea-frontend && npm run dev
+   ```
+
+### 2. Analytics Execution
+
+To synchronize dashboard metrics following data ingestion:
 ```bash
-SUPABASE_URL=https://your-project-id.supabase.co
-SUPABASE_KEY=your-service-role-key
-```
-
-## Execution
-
-### Local Execution
-To execute the pipeline locally, ensure Java 17+ and Python 3.10+ are installed:
-
-```bash
-uv sync
-uv run python3 -m workflows.etl_runner
 uv run python3 -m workflows.analytics_runner
 ```
 
-### Manual Trigger
-The pipeline can be manually triggered via the GitHub Actions interface or through the GitHub REST API using the workflow_dispatch event.
+## Cloud Deployment
 
-## License
-Distributed under the MIT License. See LICENSE for more information.
+The repository is pre-configured for the Vercel platform.
+
+- **Build Specification**: `npm run build` (within the `synthea-frontend` directory)
+- **Output Specification**: `synthea-frontend/dist`
+- **Routing Configuration**: Managed through the `vercel.json` specification in the repository root.
+
+---
+*Developed as an enterprise-grade ERP solution for synthetic medical data visualization and analysis.*

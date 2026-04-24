@@ -3,6 +3,7 @@ from workflows.spark_session_builder import get_spark_session
 from workflows.supabase_builder import get_supabase_client
 from workflows.etl_pipeline.patients import etl as patients_etl
 from workflows.etl_pipeline.conditions import etl as conditions_etl
+from workflows.etl_pipeline.encounters import etl as encounters_etl
 
 async def etl_runner():
     """
@@ -15,8 +16,11 @@ async def etl_runner():
         async with get_supabase_client() as supabase:
             print(" Starting Patient ETL...")
             await patients_etl(spark, supabase)
-            # await conditions_etl(spark, supabase)
-            print("Patient ETL Complete.")
+            print("Starting Conditions ETL...")
+            await conditions_etl(spark, supabase)
+            print("Starting Encounters ETL...")
+            await encounters_etl(spark, supabase)
+            print("ETL Sync Complete.")
 
 if __name__ == "__main__":
     asyncio.run(etl_runner())

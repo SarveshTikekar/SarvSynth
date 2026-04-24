@@ -1,7 +1,7 @@
 import axios from "axios"
 
 /*For betterment we would use functions*/
-const API_URL = "http://127.0.0.1:3001"
+const API_URL = import.meta.env.VITE_APP_API_URL || "/api"
 
 export const generatePatients = async ({ numberOfPatients }) => {
 

@@ -58,7 +58,7 @@ const Sidebar = ({ isOpen, setIsOpen, isMobile }) => {
                             <div className="w-8 h-8 bg-teal-50 rounded-lg flex items-center justify-center">
                                 <span className="font-bold text-teal-600">S</span>
                             </div>
-                            <span className="font-bold text-lg tracking-tight text-slate-800">Synthea<span className="text-teal-500">Dash</span></span>
+                            <span className="font-bold text-lg tracking-tight text-slate-800">Sarv<span className="text-teal-700">Synth</span></span>
                         </div>
                     )}
                     {isCollapsed && (
@@ -115,7 +115,7 @@ const Sidebar = ({ isOpen, setIsOpen, isMobile }) => {
                         {!isCollapsed && (
                             <div className="text-left overflow-hidden">
                                 <p className="text-sm font-bold text-slate-700 truncate">Dr. Sarvesh</p>
-                                <p className="text-xs text-slate-400 truncate">Admin Access</p>
+                                <p className="text-xs text-slate-500 truncate">System Administrator</p>
                             </div>
                         )}
                     </button>

@@ -24,7 +24,7 @@ const Layout = () => {
     }, []);
 
     return (
-        <div className="flex bg-slate-50 min-h-screen w-full">
+        <div className="flex bg-slate-50 h-screen w-full overflow-hidden">
             {/* Sidebar */}
             <Sidebar
                 isOpen={isSidebarOpen}
@@ -32,8 +32,8 @@ const Layout = () => {
                 isMobile={isMobile}
             />
 
-            {/* Main Content */}
-            <div className="flex-1 flex flex-col min-w-0">
+            {/* Main Content Container */}
+            <div className="flex-1 flex flex-col min-w-0 h-full relative">
 
                 {/* Mobile Header */}
                 <header className="lg:hidden h-16 bg-white border-b border-slate-200 flex items-center px-4 justify-between flex-shrink-0 z-30">
@@ -44,12 +44,12 @@ const Layout = () => {
                         >
                             <Menu size={24} />
                         </button>
-                        <span className="font-bold text-slate-800">SyntheaDash</span>
+                        <span className="font-bold text-slate-800">SarvSynth</span>
                     </div>
                 </header>
 
-                {/* Scrollable Content Area - Removed strict padding so children can bleed to edges */}
-                <main className="flex-1 overflow-x-hidden">
+                {/* Scrollable Content Area */}
+                <main className="flex-1 overflow-y-auto overflow-x-hidden w-full relative scroll-smooth">
                     <div className="w-full">
                         <Outlet />
                     </div>

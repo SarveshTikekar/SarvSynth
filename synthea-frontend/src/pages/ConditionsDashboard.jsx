@@ -2,11 +2,12 @@ import React, { useState, useEffect, useMemo } from "react";
 import { conditionsDashboard } from "@/api/api";
 import {
 	Activity, CheckCircle, GitMerge, Clock, Hospital,
-	Stethoscope, Zap, TrendingUp, Search, X, Info, Filter, Users, Brain, AlertTriangle, FileText, Fingerprint, RefreshCcw
+	Stethoscope, BarChart3, TrendingUp, Search, X, Info, Filter, Users, Database, AlertTriangle, FileText, Fingerprint, RefreshCcw
 } from "lucide-react";
 import KPICard from "@/components/KPICard";
 import MetricsCard from "@/components/MetricsCard";
 import AdvancedChartCard from "@/components/AdvancedChartCard";
+import LoadingScreen from "@/components/LoadingScreen";
 import {
 	BarChart, Bar, PieChart, Pie, Cell,
 	XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
@@ -250,11 +251,7 @@ const ConditionsDashboard = () => {
 	];
 
 	if (loading) {
-		return (
-			<div className="flex min-h-screen w-full bg-slate-50 items-center justify-center">
-				<Activity size={48} className="animate-spin text-teal-600" />
-			</div>
-		);
+		return <LoadingScreen message="Loading Pathology Records..." subtext="Please wait while we gather the information." />;
 	}
 
 	return (
@@ -265,9 +262,9 @@ const ConditionsDashboard = () => {
 						<div className="p-2 bg-teal-50 rounded-lg">
 							<Stethoscope size={24} className="text-teal-600" />
 						</div>
-						<h1 className="text-3xl font-black text-slate-900 tracking-tight">Conditions & Pathology</h1>
+						<h1 className="text-3xl font-black text-slate-900 tracking-tight">Conditions Overview</h1>
 					</div>
-					<p className="text-slate-500 font-medium ml-12">Epidemiological trends and disease management effectiveness</p>
+					<p className="text-slate-500 font-medium ml-12">Key statistics and trends for patient pathologies.</p>
 				</div>
 			</header>
 
@@ -357,7 +354,7 @@ const ConditionsDashboard = () => {
 				{/* SECTION 2: ADVANCED ANALYSIS */}
 				<div className="pt-10 border-t border-slate-200">
 					<h2 className="text-2xl font-black text-slate-800 tracking-tight mb-8 flex items-center gap-3">
-						<Zap className="text-teal-600 fill-teal-600" /> Advanced Analysis
+						<BarChart3 className="text-teal-600" /> Advanced Analysis
 					</h2>
 
 					{/* Row 1: Incidence, Recurrence */}

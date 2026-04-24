@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Any
 
 class patientKPIS(BaseModel):
     total_patients: int = 0
@@ -19,7 +19,12 @@ class patientMetrics(BaseModel):
     income_inequality_index: float = 0
 
 class patientAdvancedMetrics(BaseModel):
-    actural_survival_trend: List[Dict[str, List[Dict[int, float]]]]
-    demographic_entropy: List[Tuple[str, float, List[Dict[str, int]]]]
-    wealth_trajectory: List[Tuple[str, int, int]]
-    mortality_hazard_by_quintiles: Dict[str, List[Tuple[str, List[int], float]]]
+    actural_survival_trend: List[Dict[str, List[Dict[int, float]]]] = Field(default_factory=list)
+    demographic_entropy: List[Tuple[str, float, List[Dict[str, int]]]] = Field(default_factory=list)
+    wealth_trajectory: List[Tuple[str, int, int]] = Field(default_factory=list)
+    mortality_hazard_by_quintiles: Dict[str, List[Tuple[str, List[int], float]]] = Field(default_factory=dict)
+    
+    # Pre-calculated trends for the API
+    economic_dependence_trend: List[Dict[int, int]] = Field(default_factory=list)
+    cultural_diversity_trend: List[Dict[int, int]] = Field(default_factory=list)
+    mortality_rate_trend: List[Dict[int, float]] = Field(default_factory=list)

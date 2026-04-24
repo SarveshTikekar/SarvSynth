@@ -23,7 +23,7 @@ const Homepage = () => {
 
         <h1 className="text-5xl lg:text-7xl font-black text-slate-900 mb-8 tracking-tight leading-tight max-w-5xl mx-auto animate-fade-in-up delay-100">
           Next-Gen Hospital <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-blue-600">Intelligence Engine</span>
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-blue-600">Management System</span>
         </h1>
 
         <p className="text-xl text-slate-500 font-medium max-w-2xl mx-auto mb-12 leading-relaxed animate-fade-in-up delay-200">
@@ -101,9 +101,9 @@ const Homepage = () => {
             desc="Robust PySpark architecture handles massive datasets with ease."
           />
           <FeatureCard
-            icon={Zap}
-            title="Instant API"
-            desc="High-performance Flask backend delivers aggregated metrics in milliseconds."
+            icon={Clock}
+            title="High Performance"
+            desc="Efficient backend architecture delivering aggregated metrics in milliseconds."
           />
           <FeatureCard
             icon={Globe}

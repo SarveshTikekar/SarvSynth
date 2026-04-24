@@ -4,6 +4,7 @@ import { Users, Heart, DollarSign, TrendingUp, Users2, Activity, Globe, Scale, C
 import KPICard from "@/components/KPICard";
 import MetricsCard from "@/components/MetricsCard";
 import AdvancedChartCard from "@/components/AdvancedChartCard";
+import LoadingScreen from "@/components/LoadingScreen";
 import {
   LineChart, Line, BarChart, Bar, AreaChart, Area, ComposedChart,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
@@ -199,15 +200,7 @@ const PatientDashboard = () => {
   ];
 
   if (loading) {
-    return (
-      <div className="flex h-96 items-center justify-center">
-        <div className="text-center">
-          <Activity size={48} className="animate-spin text-teal-600 mb-4 mx-auto" />
-          <h2 className="text-xl font-bold text-slate-700">Analyzing Patient Data...</h2>
-          <p className="text-slate-400">Spark is processing ETL trends</p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen message="Loading Patient Records..." subtext="Please wait while we gather the information." />;
   }
 
   return (
@@ -218,9 +211,9 @@ const PatientDashboard = () => {
             <div className="p-2 bg-blue-50 rounded-lg">
               <Users size={24} className="text-blue-600" />
             </div>
-            <h1 className="text-3xl font-black text-slate-900 tracking-tight">Patient Analytics Dashboard</h1>
+            <h1 className="text-3xl font-black text-slate-900 tracking-tight">Patient Overview</h1>
           </div>
-          <p className="text-slate-500 font-medium ml-12">Real-time demographic and economic insights</p>
+          <p className="text-slate-500 font-medium ml-12">Key statistics and trends across the patient population.</p>
         </div>
       </header>
 

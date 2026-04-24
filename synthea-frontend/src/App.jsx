@@ -29,7 +29,7 @@ const router = createBrowserRouter([
 function App() {
   return (
     // w-full ensures it takes full browser width, min-h-screen ensures full height
-    <div className="w-full min-h-screen bg-gray-50">
+    <div className="w-full h-screen bg-gray-50">
       <RouterProvider router={router} />
     </div>
   );

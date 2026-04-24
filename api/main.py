@@ -1,231 +1,155 @@
-#API endpoints (Utilities to be put in utilities.py)
-
-from logging import raiseExceptions
-from api import utilities
-import sys
-import os
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+import os
+import sys
 import subprocess
-import json
+import asyncio
+from functools import wraps
 
-# Ensuring the project root (one level up) is in sys.path
+# Ensuring the project root is in sys.path
 project_root = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
-# Importing singletons (ensure these paths are correct)
-from utilities import main_singleton, PatientUtils, DataGenUtils
-from etl_pipeline.patients import PatientsETL
-from etl_pipeline.conditions import ConditionsETL
-from etl_pipeline.procedures import ProceduresETL
-from etl_pipeline.allergies import AllergiesETL
-from etl_pipeline.encounters import EncountersETL
+from api.supabase_builder import get_supabase_client
 
 # --- Flask App Initialization ---
 app = Flask(__name__)
 CORS(app)
 
-# Global vars
-patient_utils = None
-datagen_utils = None
+# --- Dependency Injection Decorator ---
+def with_supabase(f):
+    """
+    Decorator to inject an async Supabase client into the route function.
+    Handles the async lifecycle and ensures the current event loop is used.
+    """
+    @wraps(f)
+    async def decorated_function(*args, **kwargs):
+        supabase = await get_supabase_client()
+        return await f(supabase, *args, **kwargs)
+    return decorated_function
+
+async def fetch_metrics(supabase, entity_name):
+    """
+    Helper to fetch metrics using an injected client.
+    """
+    try:
+        response = await supabase.table("metrics").select("*").eq("entity_name", entity_name).execute()
+        metrics_dict = {}
+        for row in response.data:
+            metrics_dict[row['metric_type'].lower()] = row['data']
+        return metrics_dict
+    except Exception as e:
+        print(f"Error fetching metrics for {entity_name}: {e}")
+        return None
 
 # --- ROUTES ---
-@app.route('/', methods=['GET'])
-def root():
-    """Root route - health check"""
-    return jsonify({'message': 'Welcome to Synthea API', 'status': 'OK'}), 200
 
+@app.route('/', methods=['GET'])
+async def root():
+    return jsonify({'message': 'Welcome to SarvSynth API', 'status': 'OK'}), 200
 
 @app.route('/patients', methods=['GET'])
-def get_patients():
-    """Return all patients as JSON"""
+@with_supabase
+async def get_patients(supabase):
+    """Return patients from Supabase"""
     try:
-        patients = patients_singleton.get_patients()
-        return jsonify(patients), 200
+        limit = request.args.get('limit', default=100, type=int)
+        response = await supabase.table("patients").select("*").limit(limit).execute()
+        return jsonify(response.data), 200
     except Exception as e:
         return jsonify({'error': f'Failed to retrieve patients: {str(e)}'}), 500
 
 @app.route('/get_patient_count', methods=['GET'])
-def get_patient_count():
-
+@with_supabase
+async def get_patient_count(supabase):
+    """Return patient count from Supabase"""
     try:
-        data = patients_singleton.get_patients()
-        if data is None:
-            print("Data is None", sep='\n')
-            return jsonify({
-                "status": 500,
-                "message": "No patient data found"
-            })
-
-        else:
-            patient_count = data.count()
-            print(f"Patient count is: {patient_count}", sep='\n')
-            return jsonify({
-            
-                'status': 200,
-                'patient_count': patient_count,
-                'message': 'Patient count is returned successfully'
-            })
-
-    except Exception as e:
-        print("Exception occured!", sep='\n')
+        response = await supabase.table("patients").select("uuid", count="exact").execute()
         return jsonify({
-            "status": 404,
-            "error": str(e)
+            'status': 200,
+            'patient_count': response.count,
+            'message': 'Patient count returned successfully'
         })
+    except Exception as e:
+        return jsonify({"status": 500, "error": str(e)}), 500
 
 @app.route('/generate_data/', methods=['GET'])
-def generate_data():
-    """
-    Trigger Synthea script to generate new synthetic patient data.
-    """
+async def generate_data():
+    """Trigger data generation script (No DB dependency here)"""
     try:
-        num_patients = request.args.get('num_patients', type=int)
-        path = os.path.dirname(os.path.abspath(__file__))
-        script_dir = os.path.join(path, "..", "scripts", "synthea-init.sh")
+        num_patients = request.args.get('num_patients', default=10, type=int)
+        script_path = os.path.join(project_root, "scripts", "synthea-init.sh")
 
-        if not os.path.exists(script_dir):
-            return jsonify({
-                "status": "error",
-                "message": f"Synthea script not found at {script_dir}"
-            }), 404
+        if not os.path.exists(script_path):
+            return jsonify({"status": "error", "message": "Synthea script not found"}), 404
 
-        result = subprocess.run(
-            [script_dir, str(num_patients)],
-            cwd=path,
-            capture_output=True,
-            text=True,
-            check=True
-        )
+        await asyncio.to_thread(subprocess.run, [script_path, str(num_patients)], check=True)
         
-        datagen_utils = DataGenUtils()
-        metrics = datagen_utils.runnerMethod()
-
         return jsonify({
             "status": "success",
-            "message": f"{num_patients} patient records successfully generated",
-            "datagen_metrics": metrics,
-            "stdout": result.stdout.strip(),
+            "message": f"{num_patients} patient records generation triggered"
         }), 200
-
-    except subprocess.CalledProcessError as e:
-        return jsonify({
-            "status": "error",
-            "message": "Data generation failed",
-            "output": e.stdout,
-            "error": e.stderr
-        }), 500
-
-
-@app.route('/quick_dashboard', methods=['GET'])
-def quick_dashboard_data():
-    """
-    Return patient-level summary data for the Quick Dashboard.
-    This data comes from Spark DataFrames and is serialized into JSON.
-    """
-
-    try:
-        # Check if patient data already exists
-        data = main_singleton.getDataframes("patients")
-
-        if data is None:
-            # Run ETL once to load patient data
-            patients_singleton.etl()
-            data = main_singleton.getDataframes("patients")
-
-        if data is None:
-            return jsonify({
-                "api-status": "failure",
-                "code": 404,
-                "message": "No patient data found after ETL."
-            }), 404
-
-        # ✅ Convert Spark DataFrame → JSON serializable list of dicts
-        data_json = [row.asDict(recursive=True) for row in data.collect()]
-
-        return jsonify({
-            "api-status": "successs",
-            "code": 200,
-            "count": len(data_json),
-            "data": data_json
-        }), 200
-
     except Exception as e:
-        return jsonify({
-            "api-status": "Exception caused",
-            "error": str(e),
-            "code": 500
-        }), 500
+        return jsonify({"status": "error", "message": str(e)}), 500
 
-
-#Dashboard for patients
 @app.route('/patient_dashboard', methods=['GET'])
-def patient_dashboard():
-    try:
-        if main_singleton.getDataframes("patients") is None:
-            PatientsETL()
-            
-        patient_utils = PatientUtils()
-        patient_data = [main_singleton.getKPIS("patients"), main_singleton.getMetrics("patients"), main_singleton.getAdvancedMetrics("patients")]
-
-        if patient_data is None:
-            return jsonify({'message': 'Data not found'}), 404
-        
-        trends = patient_utils.run_all()
-        return jsonify({'message': 'Data Loaded successfully', 
-                        'kpis': patient_data[0].model_dump(), 
-                        'metrics': patient_data[1].model_dump(), 
-                        'metric_trends': {
-                            'economic_dependence': trends[0],
-                            'cultural_diversity': trends[1],
-                            'mortality_rate': trends[2]
-                        },
-                        'advanced_metrics': patient_data[2].model_dump()})
-
-    except Exception as e:
-        return jsonify({'error': str(e)}), 400
-        
+@with_supabase
+async def patient_dashboard(supabase):
+    """Fetch patient metrics from Supabase"""
+    metrics = await fetch_metrics(supabase, "patients")
+    if not metrics:
+        return jsonify({'message': 'Data not found. Run analytics pipeline first.'}), 404
+    
+    adv_metrics = metrics.get('advanced_metrics', {})
+    
+    return jsonify({
+        'message': 'Data Loaded successfully',
+        'kpis': metrics.get('kpis', {}),
+        'metrics': metrics.get('metrics', {}),
+        'metric_trends': {
+            'economic_dependence': adv_metrics.get('economic_dependence_trend', []),
+            'cultural_diversity': adv_metrics.get('cultural_diversity_trend', []),
+            'mortality_rate': adv_metrics.get('mortality_rate_trend', [])
+        },
+        'advanced_metrics': adv_metrics
+    })
 
 @app.route('/conditions_dashboard', methods=['GET'])
-def conditions_dashboard():
-    try:
-
-        if main_singleton.getDataframes("conditions") is None:
-            conditions_obj = ConditionsETL()
-
-        conditions_data = [main_singleton.getKPIS("conditions"), main_singleton.getMetrics("conditions"), main_singleton.getAdvancedMetrics("conditions")]
-
-        if conditions_data is None:
-            return jsonify({'message': 'Data not found'}), 404
-        
-        return jsonify({'message': 'Data Loaded successfully', 
-                        'kpis': conditions_data[0].model_dump(), 
-                        'metrics': conditions_data[1].model_dump(),
-                        'advanced_metrics': conditions_data[2].model_dump()})
-
-    except Exception as e:
-        return jsonify({'error': str(e)}), 400
+@with_supabase
+async def conditions_dashboard(supabase):
+    """Fetch condition metrics from Supabase"""
+    metrics = await fetch_metrics(supabase, "conditions")
+    if not metrics:
+        return jsonify({'message': 'Data not found. Run analytics pipeline first.'}), 404
+    
+    return jsonify({
+        'message': 'Data Loaded successfully',
+        'kpis': metrics.get('kpis', {}),
+        'metrics': metrics.get('metrics', {}),
+        'advanced_metrics': metrics.get('advanced_metrics', {})
+    })
 
 @app.route('/encounters_dashboard', methods=['GET'])
-def encounters_dashboard():
-    try:
-        if main_singleton.getDataframes("encounters") is None:
-            encounters_obj = EncountersETL()
+@with_supabase
+async def encounters_dashboard(supabase):
+    """Fetch encounter metrics from Supabase"""
+    metrics = await fetch_metrics(supabase, "encounters")
+    if not metrics:
+        return jsonify({'message': 'Data not found. Run analytics pipeline first.'}), 404
+    
+    return jsonify({
+        'message': 'Data Loaded successfully',
+        'kpis': metrics.get('kpis', {}),
+        'metrics': metrics.get('metrics', {}),
+        'advanced_metrics': metrics.get('advanced_metrics', {})
+    })
 
-        encounters_data = [main_singleton.getKPIS("encounters"), main_singleton.getMetrics("encounters"), main_singleton.getAdvancedMetrics("encounters")]
+@app.route('/quick_dashboard', methods=['GET'])
+@with_supabase
+async def quick_dashboard_data(supabase):
+    """Legacy endpoint for raw patient data"""
+    return await get_patients(supabase)
 
-        if encounters_data is None:
-            return jsonify({'message': 'Data not found'}), 404
-        
-        return jsonify({'message': 'Data Loaded successfully', 
-                        'kpis': encounters_data[0].model_dump(), 
-                        'metrics': encounters_data[1].model_dump(),
-                        'advanced_metrics': encounters_data[2].model_dump()})
-
-    except Exception as e:
-        return jsonify({'error': str(e)}), 400
-
-# --- MAIN ENTRY POINT ---
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=3001, debug=True)

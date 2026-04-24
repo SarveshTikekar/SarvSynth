@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { patientDashboard, conditionsDashboard, encountersDashboard } from "@/api/api";
-import { Users, Activity, Clock, ShieldCheck, TrendingUp, AlertCircle, HeartPulse, Zap, Stethoscope, Banknote, Shield, Wallet } from 'lucide-react';
+import { Users, Activity, Clock, ShieldCheck, TrendingUp, AlertCircle, HeartPulse, Database, Stethoscope, Banknote, Shield, Wallet, BarChart3 } from 'lucide-react';
 import KPICard from "@/components/KPICard";
 import { Link } from 'react-router-dom';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts';
+import LoadingScreen from "@/components/LoadingScreen";
 
 const MainDashboard = () => {
     const [stats, setStats] = useState({
@@ -126,19 +127,7 @@ const MainDashboard = () => {
     ];
 
     if (loading) {
-        return (
-            <div className="flex min-h-screen w-full bg-slate-50/50 items-center justify-center">
-                <div className="flex flex-col items-center gap-4">
-                    <div className="relative">
-                        <div className="w-16 h-16 border-4 border-teal-100 border-t-teal-600 rounded-full animate-spin"></div>
-                        <div className="absolute inset-0 flex items-center justify-center">
-                            <Zap size={20} className="text-teal-600 animate-pulse" />
-                        </div>
-                    </div>
-                    <p className="text-slate-500 font-medium animate-pulse">Aggregating Hospital Data...</p>
-                </div>
-            </div>
-        );
+        return <LoadingScreen message="Loading System Overview..." subtext="Please wait while we gather the information." />;
     }
 
     return (
@@ -149,13 +138,13 @@ const MainDashboard = () => {
                     <div>
                         <div className="flex items-center gap-3 mb-2">
                             <div className="p-2 bg-rose-50 rounded-lg">
-                                <HeartPulse className="text-rose-500" size={24} />
+                                <HeartPulse size={24} className="text-rose-500" />
                             </div>
                             <h1 className="text-3xl font-black text-slate-900 tracking-tight">
                                 Executive Overview
                             </h1>
                         </div>
-                        <p className="text-slate-500 font-medium ml-12">Real-time aggregate insights across all hospital departments</p>
+                        <p className="text-slate-500 font-medium ml-12">Aggregate statistics and metrics across all departments.</p>
                     </div>
                     <div className="hidden md:flex gap-3">
                         <Link to="/data_generation" className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-bold hover:bg-slate-800 transition-colors shadow-lg shadow-slate-200">
@@ -259,7 +248,7 @@ const MainDashboard = () => {
                     {/* Aggregate Efficiency Chart */}
                     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
                         <h3 className="font-bold text-slate-800 text-lg mb-4 flex items-center gap-2">
-                            <Zap className="text-purple-500" size={20} /> Throughput Metrics
+                            <BarChart3 className="text-purple-500" size={20} /> Throughput Metrics
                         </h3>
                         <div className="h-40 w-full">
                             <ResponsiveContainer width="100%" height="100%">

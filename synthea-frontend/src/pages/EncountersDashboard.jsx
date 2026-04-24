@@ -3,11 +3,12 @@ import React, { useState, useEffect, useMemo } from "react";
 import { encountersDashboard } from "@/api/api";
 import {
     Activity, CheckCircle, GitMerge, Clock, Hospital,
-    Stethoscope, Zap, TrendingUp, Search, X, Info, Filter, Users, Brain, AlertTriangle, DollarSign, BriefcaseMedical, UserCheck, Stethoscope as StethIcon, ShieldCheck
+    Stethoscope, BarChart3, TrendingUp, Search, X, Info, Filter, Users, Database, AlertTriangle, DollarSign, BriefcaseMedical, UserCheck, Stethoscope as StethIcon, ShieldCheck
 } from "lucide-react";
 import KPICard from "@/components/KPICard";
 import MetricsCard from "@/components/MetricsCard";
 import AdvancedChartCard from "@/components/AdvancedChartCard";
+import LoadingScreen from "@/components/LoadingScreen";
 import {
     BarChart, Bar, PieChart, Pie, Cell,
     XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
@@ -162,11 +163,7 @@ const EncountersDashboard = () => {
     }
 
     if (loading) {
-        return (
-            <div className="flex min-h-screen w-full bg-slate-50 items-center justify-center">
-                <Activity size={48} className="animate-spin text-teal-600" />
-            </div>
-        );
+        return <LoadingScreen message="Loading Encounter Records..." subtext="Please wait while we gather the information." />;
     }
 
     return (
@@ -177,9 +174,9 @@ const EncountersDashboard = () => {
                         <div className="p-2 bg-purple-50 rounded-lg">
                             <BriefcaseMedical size={24} className="text-purple-600" />
                         </div>
-                        <h1 className="text-3xl font-black text-slate-900 tracking-tight">Encounters Dashboard</h1>
+                        <h1 className="text-3xl font-black text-slate-900 tracking-tight">Encounters Overview</h1>
                     </div>
-                    <p className="text-slate-500 font-medium ml-12">Operational flow, revenue diagnostics, and practitioner engagement</p>
+                    <p className="text-slate-500 font-medium ml-12">Key statistics and trends for clinical encounters and operations.</p>
                 </div>
             </header>
 
@@ -309,7 +306,7 @@ const EncountersDashboard = () => {
                 {/* SECTION 3: 4 GRAPHICAL ADVANCED METRICS */}
                 <div className="pt-10 border-t border-slate-200">
                     <h2 className="text-2xl font-black text-slate-800 tracking-tight mb-8 flex items-center gap-3">
-                        <Zap className="text-purple-600 fill-purple-600" /> Advanced Interaction Metrics
+                        <BarChart3 className="text-purple-600" /> Advanced Interaction Metrics
                     </h2>
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
