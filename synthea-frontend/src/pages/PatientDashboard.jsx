@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { patientDashboard } from "@/api/api";
-import { Users, Heart, DollarSign, TrendingUp, Users2, Activity, Globe, Scale, Clock, GraduationCap } from "lucide-react";
+import { Users, Heart, DollarSign, TrendingUp, Users2, Activity, Globe, Scale, Clock as ClockIcon, GraduationCap } from "lucide-react";
 import KPICard from "@/components/KPICard";
 import MetricsCard from "@/components/MetricsCard";
 import AdvancedChartCard from "@/components/AdvancedChartCard";
@@ -74,7 +74,6 @@ const transformMortalityData = (raw) => {
 const PatientDashboard = () => {
   const [data, setData] = useState({ kpis: {}, metrics: {}, trends: {}, advanced: {} });
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -88,11 +87,9 @@ const PatientDashboard = () => {
             trends: result.metric_trends || {},
             advanced: result.advanced_metrics || {}
           });
-        } else {
-          setError("Failed to load patient data.");
         }
       } catch (err) {
-        setError("Error fetching dashboard data.");
+        console.error("Error fetching dashboard data:", err);
       } finally {
         setLoading(false);
       }
@@ -170,7 +167,7 @@ const PatientDashboard = () => {
       prevWeek: data.kpis.historical_comparisons?.avg_patient_age?.prevWeek,
       prevMonth: data.kpis.historical_comparisons?.avg_patient_age?.prevMonth,
       prevYear: data.kpis.historical_comparisons?.avg_patient_age?.prevYear,
-      icon: Clock,
+      icon: ClockIcon,
       iconBg: "bg-cyan-50",
       iconColor: "text-cyan-600",
       infoText: "Average chronological age of the active patient base."

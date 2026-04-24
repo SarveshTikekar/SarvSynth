@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Activity, Users, LayoutDashboard, TrendingUp, Layers, Zap, Database, Globe, ChevronRight } from "lucide-react";
+import { ArrowRight, Activity, Users, LayoutDashboard, TrendingUp, Layers, Clock as ClockIcon, Database, Globe, ChevronRight } from "lucide-react";
 import FeatureCard from "../components/FeatureCard";
 
 const Homepage = () => {
@@ -81,32 +81,32 @@ const Homepage = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           <FeatureCard
-            icon={Users}
+            Icon={Users}
             title="Patient Demographics"
             desc="Track population trends, survivor probabilities, and socioeconomic factors."
           />
           <FeatureCard
-            icon={Activity}
+            Icon={Activity}
             title="Pathology Engine"
             desc="Advanced condition tracking including comorbidity heatmaps and recurrence rates."
           />
           <FeatureCard
-            icon={TrendingUp}
+            Icon={TrendingUp}
             title="Operational Metrics"
             desc="Monitor admission rates, length of stay, and resource utilization efficiency."
           />
           <FeatureCard
-            icon={Layers}
+            Icon={Layers}
             title="Scalable ETL"
             desc="Robust PySpark architecture handles massive datasets with ease."
           />
           <FeatureCard
-            icon={Clock}
+            Icon={ClockIcon}
             title="High Performance"
             desc="Efficient backend architecture delivering aggregated metrics in milliseconds."
           />
           <FeatureCard
-            icon={Globe}
+            Icon={Globe}
             title="Geo-Spatial Awareness"
             desc="Analyze demographic entropy and diversity scores across regions."
           />

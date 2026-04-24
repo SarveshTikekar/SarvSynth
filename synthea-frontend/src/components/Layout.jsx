@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import { Menu } from 'lucide-react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 
 const Layout = () => {
     const [isSidebarOpen, setSidebarOpen] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
-    const location = useLocation();
 
     // Handle Resize
     useEffect(() => {

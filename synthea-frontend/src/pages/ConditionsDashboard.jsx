@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { conditionsDashboard } from "@/api/api";
 import {
-	Activity, CheckCircle, GitMerge, Clock, Hospital,
+	Activity, CheckCircle, GitMerge, Clock as ClockIcon, Hospital,
 	Stethoscope, BarChart3, TrendingUp, Search, X, Info, Filter, Users, Database, AlertTriangle, FileText, Fingerprint, RefreshCcw
 } from "lucide-react";
 import KPICard from "@/components/KPICard";
@@ -29,12 +29,11 @@ const PIE_COLORS = ["#14b8a6", "#f43f5e", "#8b5cf6", "#f59e0b", "#3b82f6"];
 const ConditionsDashboard = () => {
 	const [data, setData] = useState({ kpis: {}, metrics: {}, advanced_metrics: {} });
 	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState("");
 
 	// --- Interactivity State ---
 	const [incidenceSearch, setIncidenceSearch] = useState("");
 	const [selectedIncidence, setSelectedIncidence] = useState(null);
-	const [recurrenceSort, setRecurrenceSort] = useState("desc");
+	const [recurrenceSort] = useState("desc");
 
 	// Graph State
 	const [graphLimit, setGraphLimit] = useState(50);
@@ -52,11 +51,9 @@ const ConditionsDashboard = () => {
 						metrics: result.conditions_dashboard.metrics || {},
 						advanced_metrics: result.conditions_dashboard.advanced_metrics || {}
 					});
-				} else {
-					setError("Failed to load conditions data.");
 				}
 			} catch (err) {
-				setError("Error fetching dashboard data.");
+				console.error(err);
 			} finally {
 				setLoading(false);
 			}
@@ -209,7 +206,7 @@ const ConditionsDashboard = () => {
 			prevWeek: data.kpis.historical_comparisons?.average_time_to_cure?.prevWeek,
 			prevMonth: data.kpis.historical_comparisons?.average_time_to_cure?.prevMonth,
 			prevYear: data.kpis.historical_comparisons?.average_time_to_cure?.prevYear,
-			icon: Clock, iconBg: "bg-amber-50", iconColor: "text-amber-600", sentiment: "lower-is-better",
+			icon: ClockIcon, iconBg: "bg-amber-50", iconColor: "text-amber-600", sentiment: "lower-is-better",
 			infoText: "Average days elapsed between condition diagnosis and resolution."
 		},
 		{
@@ -403,7 +400,7 @@ const ConditionsDashboard = () => {
 							</div>
 						</div>
 
-						<AdvancedChartCard title="Recurrence Gap" subtitle="Relapse Interval" icon={Clock}>
+						<AdvancedChartCard title="Recurrence Gap" subtitle="Relapse Interval" icon={ClockIcon}>
 							<div className="h-[300px] w-full">
 								<ResponsiveContainer width="100%" height="100%">
 									<BarChart data={recurrenceGapData} layout="vertical" margin={{ left: 40 }}>

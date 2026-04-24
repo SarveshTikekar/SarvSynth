@@ -2,8 +2,8 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { encountersDashboard } from "@/api/api";
 import {
-    Activity, CheckCircle, GitMerge, Clock, Hospital,
-    Stethoscope, BarChart3, TrendingUp, Search, X, Info, Filter, Users, Database, AlertTriangle, DollarSign, BriefcaseMedical, UserCheck, Stethoscope as StethIcon, ShieldCheck
+    Activity, CheckCircle, GitMerge, Clock as ClockIcon, Hospital,
+    Stethoscope, BarChart3, TrendingUp, Search, X, Info, Filter, Users, Database, AlertTriangle, DollarSign, BriefcaseMedical, UserCheck, ShieldCheck
 } from "lucide-react";
 import KPICard from "@/components/KPICard";
 import MetricsCard from "@/components/MetricsCard";
@@ -112,7 +112,7 @@ const EncountersDashboard = () => {
             prevWeek: data.kpis.historical_comparisons?.average_encounter_duration_hours?.prevWeek,
             prevMonth: data.kpis.historical_comparisons?.average_encounter_duration_hours?.prevMonth,
             prevYear: data.kpis.historical_comparisons?.average_encounter_duration_hours?.prevYear,
-            icon: Clock, iconBg: "bg-amber-50", iconColor: "text-amber-600",
+            icon: ClockIcon, iconBg: "bg-amber-50", iconColor: "text-amber-600",
             infoText: "Average time spent per encounter in hours"
         },
         {
@@ -121,7 +121,7 @@ const EncountersDashboard = () => {
             prevWeek: data.kpis.historical_comparisons?.average_practitioner_load?.prevWeek,
             prevMonth: data.kpis.historical_comparisons?.average_practitioner_load?.prevMonth,
             prevYear: data.kpis.historical_comparisons?.average_practitioner_load?.prevYear,
-            icon: StethIcon, iconBg: "bg-indigo-50", iconColor: "text-indigo-600",
+            icon: Stethoscope, iconBg: "bg-indigo-50", iconColor: "text-indigo-600",
             infoText: "Average number of encounters handled per practitioner"
         },
         {
@@ -392,7 +392,7 @@ const EncountersDashboard = () => {
                                 <div className="flex items-start gap-2" style={{ overflow: 'visible' }}>
                                     <div>
                                         <h3 className="font-bold text-slate-800 flex items-center gap-2">
-                                            <Clock size={18} className="text-indigo-500" /> Duration Distribution
+                                            <ClockIcon size={18} className="text-indigo-500" /> Duration Distribution
                                         </h3>
                                         <p className="text-sm text-slate-500 mt-1">Average Time in Hours by Encounter Type</p>
                                     </div>

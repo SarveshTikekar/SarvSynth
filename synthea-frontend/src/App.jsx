@@ -8,12 +8,13 @@ import ConditionsDashboard from "./pages/ConditionsDashboard";
 import AllergiesDashboard from './pages/AllergiesDashboard';
 import EncountersDashboard from './pages/EncountersDashboard';
 import Layout from './components/Layout';
-import path from 'path';
+import ErrorPage from './pages/ErrorPage';
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <Layout />,
+    errorElement: <ErrorPage />,
     children: [
       { path: "/", element: <Homepage /> },
       { path: "/dashboard", element: <MainDashboard /> },

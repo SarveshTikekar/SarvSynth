@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { patientDashboard, conditionsDashboard, encountersDashboard } from "@/api/api";
-import { Users, Activity, Clock, ShieldCheck, TrendingUp, AlertCircle, HeartPulse, Database, Stethoscope, Banknote, Shield, Wallet, BarChart3 } from 'lucide-react';
+import { Users, Activity, Clock as ClockIcon, ShieldCheck, TrendingUp, AlertCircle, HeartPulse, Database, Stethoscope, Banknote, Shield, Wallet, BarChart3 } from 'lucide-react';
 import KPICard from "@/components/KPICard";
 import { Link } from 'react-router-dom';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts';
@@ -67,7 +67,7 @@ const MainDashboard = () => {
             prevWeek: stats.conditions.historical_comparisons?.average_time_to_cure?.prevWeek,
             prevMonth: stats.conditions.historical_comparisons?.average_time_to_cure?.prevMonth,
             prevYear: stats.conditions.historical_comparisons?.average_time_to_cure?.prevYear,
-            icon: Clock, iconBg: "bg-amber-50", iconColor: "text-amber-600",
+            icon: ClockIcon, iconBg: "bg-amber-50", iconColor: "text-amber-600",
             sentiment: "lower-is-better"
         },
         {
