@@ -45,11 +45,11 @@ async def fetch_metrics(supabase, entity_name):
 
 # --- ROUTES ---
 
-@app.route('/', methods=['GET'])
+@app.route('/api/', methods=['GET'])
 async def root():
     return jsonify({'message': 'Welcome to SarvSynth API', 'status': 'OK'}), 200
 
-@app.route('/patients', methods=['GET'])
+@app.route('/api/patients', methods=['GET'])
 @with_supabase
 async def get_patients(supabase):
     """Return patients from Supabase"""
@@ -60,7 +60,7 @@ async def get_patients(supabase):
     except Exception as e:
         return jsonify({'error': f'Failed to retrieve patients: {str(e)}'}), 500
 
-@app.route('/get_patient_count', methods=['GET'])
+@app.route('/api/get_patient_count', methods=['GET'])
 @with_supabase
 async def get_patient_count(supabase):
     """Return patient count from Supabase"""
@@ -74,7 +74,7 @@ async def get_patient_count(supabase):
     except Exception as e:
         return jsonify({"status": 500, "error": str(e)}), 500
 
-@app.route('/generate_data/', methods=['GET'])
+@app.route('/api/generate_data/', methods=['GET'])
 async def generate_data():
     """Trigger data generation script (No DB dependency here)"""
     try:
@@ -93,7 +93,7 @@ async def generate_data():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
-@app.route('/patient_dashboard', methods=['GET'])
+@app.route('/api/patient_dashboard', methods=['GET'])
 @with_supabase
 async def patient_dashboard(supabase):
     """Fetch patient metrics from Supabase"""
@@ -115,7 +115,7 @@ async def patient_dashboard(supabase):
         'advanced_metrics': adv_metrics
     })
 
-@app.route('/conditions_dashboard', methods=['GET'])
+@app.route('/api/conditions_dashboard', methods=['GET'])
 @with_supabase
 async def conditions_dashboard(supabase):
     """Fetch condition metrics from Supabase"""
@@ -130,7 +130,7 @@ async def conditions_dashboard(supabase):
         'advanced_metrics': metrics.get('advanced_metrics', {})
     })
 
-@app.route('/encounters_dashboard', methods=['GET'])
+@app.route('/api/encounters_dashboard', methods=['GET'])
 @with_supabase
 async def encounters_dashboard(supabase):
     """Fetch encounter metrics from Supabase"""
@@ -145,7 +145,7 @@ async def encounters_dashboard(supabase):
         'advanced_metrics': metrics.get('advanced_metrics', {})
     })
 
-@app.route('/quick_dashboard', methods=['GET'])
+@app.route('/api/quick_dashboard', methods=['GET'])
 @with_supabase
 async def quick_dashboard_data(supabase):
     """Legacy endpoint for raw patient data"""
