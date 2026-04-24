@@ -210,26 +210,41 @@ async def calculateAdvancedMetrics(df, supabase):
 
 async def run_encounter_analytics(spark, supabase):
     print("Fetching raw encounters data for analytics...")
-    response = await supabase.table("encounters").select("*").execute()
-    if not response.data:
+    
+    # 1. Fetch total count first
+    response = await supabase.table("encounters").select("*", count="exact").limit(0).execute()
+    row_count = response.count
+    
+    if row_count == 0:
         print("No data found in 'encounters' table. Skipping analytics.")
         return
 
+    all_data = []
+    batch_size = 1000
+    for i in range(0, row_count, batch_size):
+        # Inclusive range: e.g. 0 to 999
+        # FIXED: Fetch from "encounters" table, not "patients"
+        response = await supabase.table("encounters").select("*").range(i, i + batch_size - 1).execute()
+        if response.data:
+            all_data.extend(response.data)
+
+    if not all_data: return
+
     # PRE-CLEANING: Spark is strict about DoubleType. We MUST convert all numeric fields to float.
     sanitized_data = []
-    for row in response.data:
+    for row in all_data:
         row['visiting_base_fees'] = float(row['visiting_base_fees']) if row['visiting_base_fees'] is not None else 0.0
         row['visting_total_fees'] = float(row['visting_total_fees']) if row['visting_total_fees'] is not None else 0.0
         row['coverage'] = float(row['coverage']) if row['coverage'] is not None else 0.0
         sanitized_data.append(row)
 
-    # Using explicit schema to prevent "Cannot merge type LongType and DoubleType"
+    # Create ONE DataFrame using explicit schema to prevent type merging errors
     df = spark.createDataFrame(sanitized_data, schema=ENCOUNTERS_SCHEMA)
     
     # Convert strings back to timestamps for Spark math
     df = df.withColumn("visit_start", to_timestamp(col("visit_start"))) \
            .withColumn("visit_end", to_timestamp(col("visit_end")))
-
+    
     await calculateKPIS(df, supabase)
     await calculateMetrics(df, supabase)
     await calculateAdvancedMetrics(df, supabase)

@@ -227,6 +227,7 @@ const PatientDashboard = () => {
             ]}
             chartData={data.trends.economic_dependence}
             chartType="bar"
+            infoText="Ratio of the non-working age population (under 20 or over 64) to the working-age population (20-64)."
           />
 
           <MetricsCard
@@ -236,6 +237,7 @@ const PatientDashboard = () => {
             ]}
             chartData={data.trends.cultural_diversity}
             chartType="line"
+            infoText="Multi-ethnic representation score where 100% represents a perfectly balanced distribution across all racial groups."
           />
 
           <MetricsCard
@@ -245,6 +247,7 @@ const PatientDashboard = () => {
             ]}
             chartData={data.trends.mortality_rate}
             chartType="line"
+            infoText="Longitudinal death rate within the selected population, tracking changes in survival rates over the last 10 years."
           />
         </div>
 
@@ -261,6 +264,7 @@ const PatientDashboard = () => {
               title="Actual Survival Trend"
               subtitle="Male vs Female Survival Probability"
               icon={Activity}
+              infoText="Probability of survival over time by gender, calculated using the Kaplan-Meier estimate on historical patient records."
             >
               <AreaChart data={survivalData}>
                 <defs>
@@ -290,6 +294,7 @@ const PatientDashboard = () => {
               title="Demographic Entropy"
               subtitle="Top Cities by Population Diversity"
               icon={Users}
+              infoText="Measure of racial and ethnic diversity within specific geographic regions, using the Shannon Entropy Index."
             >
               <BarChart data={entropyData} layout="vertical" margin={{ left: 20 }} barSize={24}>
                 <defs>
@@ -311,6 +316,7 @@ const PatientDashboard = () => {
               title="Wealth Trajectory"
               subtitle="Income vs Velocity by Age Group"
               icon={DollarSign}
+              infoText="Correlation between age groups and average household income, showing the rate of wealth accumulation over a lifetime."
             >
               <ComposedChart data={wealthData}>
                 <defs>
@@ -335,6 +341,7 @@ const PatientDashboard = () => {
               title="Mortality Hazard"
               subtitle="Hazard Probability by Income Quintile"
               icon={Scale}
+              infoText="Probability of mortality categorized by income quintiles and racial demographics, highlighting socioeconomic health disparities."
             >
               <BarChart data={mortalityData} barGap={0} barSize={32}>
                 <defs>

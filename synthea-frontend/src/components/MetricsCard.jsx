@@ -24,7 +24,17 @@ const MetricsCard = ({ title, metrics, chartData, chartType = "line", infoText =
   }, [chartData]); 
 
   return (
-    <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm mb-8 flex flex-col h-full overflow-hidden">
+    <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm mb-8 flex flex-col h-full overflow-hidden relative">
+
+      {infoText && (
+        <div className="absolute top-6 right-6 z-10 group/tooltip">
+          <Info size={16} className="text-slate-300 hover:text-teal-600 transition-colors cursor-help" />
+          <div className="absolute right-0 top-full mt-2 w-72 bg-slate-900/95 backdrop-blur-md text-white text-[11px] leading-relaxed rounded-2xl p-4 opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all z-[200] shadow-2xl pointer-events-none normal-case tracking-normal font-medium border border-white/10">
+            <div className="absolute right-2 bottom-full w-0 h-0 border-l-8 border-r-8 border-b-8 border-transparent border-b-slate-900/95"></div>
+            {infoText}
+          </div>
+        </div>
+      )}
 
       {/* Top Section: Header & Summary */}
       <div className="w-full p-6 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-6 rounded-t-[2.5rem]">
@@ -34,15 +44,6 @@ const MetricsCard = ({ title, metrics, chartData, chartType = "line", infoText =
           </div>
           <div className="flex items-center gap-2">
             <h3 className="text-xl font-black text-slate-800 tracking-tight">{title}</h3>
-            {infoText && (
-              <div className="relative group/tooltip flex items-center">
-                <Info size={16} className="text-slate-400 hover:text-teal-600 transition-colors cursor-help" />
-                <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-max max-w-xs bg-slate-800 text-white text-xs rounded-xl p-3 opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all z-[200] shadow-xl pointer-events-none normal-case tracking-normal font-normal">
-                  <div className="absolute left-1/2 -translate-x-1/2 bottom-full w-0 h-0 border-l-8 border-r-8 border-b-8 border-transparent border-b-slate-800"></div>
-                  {infoText}
-                </div>
-              </div>
-            )}
           </div>
         </div>
 

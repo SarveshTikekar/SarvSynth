@@ -8,6 +8,8 @@ from workflows.etl_pipeline.models.patients import patientKPIS, patientMetrics, 
 import asyncio
 from datetime import datetime, timezone
 import builtins
+from functools import reduce
+from pyspark.sql import DataFrame
 
 async def calculateKPIS(df, supabase): 
     print("Calculating Patient KPIs...")
@@ -192,9 +194,26 @@ async def calculateAdvancedMetrics(df, supabase):
     
 async def run_patient_analytics(spark, supabase):
     print("Fetching raw data for patient analytics...")
-    response = await supabase.table("patients").select("*").execute()
-    if not response.data: return
-    df = spark.createDataFrame(response.data)
+
+    # 1. Fetch total count first (limit 0 is efficient)
+    response = await supabase.table("patients").select("*", count="exact").limit(0).execute()
+    row_count = response.count
+    
+    if row_count == 0:
+        print("No patient data found to analyze.")
+        return
+
+    all_data = []
+    batch_size = 1000
+    for i in range(0, row_count, batch_size):
+        # Inclusive range: e.g. 0 to 999, 1000 to 1999
+        response = await supabase.table("patients").select("*").range(i, i + batch_size - 1).execute()
+        if response.data:
+            all_data.extend(response.data)
+    
+    # Create ONE DataFrame from the full list
+    df = spark.createDataFrame(all_data)
+    
     await calculateKPIS(df, supabase)
     await calculateMetrics(df, supabase)
     await calculateAdvancedMetrics(df, supabase)

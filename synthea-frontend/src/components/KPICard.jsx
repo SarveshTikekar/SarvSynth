@@ -60,20 +60,18 @@ const SingleKPICard = ({ kpi, index }) => {
 
         {/* Label & Value */}
         <div className="space-y-1 flex-1">
-          <div className="flex items-center gap-1" style={{ overflow: 'visible' }}>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-              {kpi.title}
-            </p>
             {kpi.infoText && (
-              <div className="relative group/tooltip flex items-center" style={{ overflow: 'visible' }}>
-                <Info size={10} className="text-slate-400 hover:text-teal-600 transition-colors cursor-help" />
-                <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-max max-w-xs bg-slate-800 text-white text-xs rounded-xl p-3 opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all z-[200] shadow-xl pointer-events-none normal-case tracking-normal font-normal">
-                  <div className="absolute left-1/2 -translate-x-1/2 bottom-full w-0 h-0 border-l-8 border-r-8 border-b-8 border-transparent border-b-slate-800"></div>
+              <div className="absolute top-4 right-4 z-10 group/tooltip" style={{ overflow: 'visible' }}>
+                <Info size={14} className="text-slate-300 hover:text-teal-500 transition-colors cursor-help" />
+                <div className="absolute right-0 top-full mt-2 w-64 bg-slate-900/95 backdrop-blur-md text-white text-[11px] leading-relaxed rounded-2xl p-4 opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all z-[200] shadow-2xl pointer-events-none normal-case tracking-normal font-medium border border-white/10">
+                  <div className="absolute right-2 bottom-full w-0 h-0 border-l-8 border-r-8 border-b-8 border-transparent border-b-slate-900/95"></div>
                   {kpi.infoText}
                 </div>
               </div>
             )}
-          </div>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+              {kpi.title}
+            </p>
           <h3 className="text-3xl font-black text-slate-900 tracking-tight">
             {typeof kpi.value === 'number' ? kpi.value.toLocaleString() : kpi.value}
           </h3>

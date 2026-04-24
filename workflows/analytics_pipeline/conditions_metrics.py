@@ -5,8 +5,9 @@ import asyncio
 from datetime import datetime, timezone
 import builtins
 from itertools import chain
-
 from workflows.etl_pipeline.models.conditions import conditionKPIS, conditionMetrics, conditionAdvancedMetrics
+from pyspark.sql import DataFrame
+from functools import reduce
 
 month_to_num_mapping = {1: "Jan", 2: "Feb", 3: "Mar", 4: "Apr", 5: "May", 6: "Jun", 7: "Jul", 8: "Aug", 9: "Sep", 10: "Oct", 11: "Nov", 12: "Dec"}
 
@@ -235,16 +236,27 @@ async def calculateAdvancedMetrics(df, supabase):
 
 async def run_conditions_analytics(spark, supabase):
     print("Fetching raw conditions data for analytics...")
-    response = await supabase.table("conditions").select("*").execute()
     
-    if not response.data:
+    # 1. Fetch total count first
+    response = await supabase.table("conditions").select("*", count="exact").limit(0).execute()
+    row_count = response.count
+    
+    if row_count == 0:
         print("No data found in 'conditions' table. Skipping analytics.")
         return
 
-    df = spark.createDataFrame(response.data)
+    all_data = []
+    batch_size = 1000
+    for i in range(0, row_count, batch_size):
+        # Inclusive range: e.g. 0 to 999
+        response = await supabase.table("conditions").select("*").range(i, i + batch_size - 1).execute()
+        if response.data:
+            all_data.extend(response.data)
+    
+    # Create ONE DataFrame from the full list
+    df = spark.createDataFrame(all_data)
     
     await calculateKPIS(df, supabase)
     await calculateMetrics(df, supabase)
     await calculateAdvancedMetrics(df, supabase)
-    
     print("Conditions Analytics Sync Complete.")
