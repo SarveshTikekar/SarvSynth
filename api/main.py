@@ -17,6 +17,17 @@ from api.supabase_builder import get_supabase_client
 app = Flask(__name__)
 CORS(app)
 
+# --- Global Supabase Client ---
+_supabase_client = None
+
+async def get_supabase():
+    global _supabase_client
+    if _supabase_client is None:
+        # Import inside to avoid circular dependency if any
+        from api.supabase_builder import get_supabase_client as init_client
+        _supabase_client = await init_client()
+    return _supabase_client
+
 # --- Dependency Injection Decorator ---
 def with_supabase(f):
     """
@@ -25,7 +36,7 @@ def with_supabase(f):
     """
     @wraps(f)
     async def decorated_function(*args, **kwargs):
-        supabase = await get_supabase_client()
+        supabase = await get_supabase()
         return await f(supabase, *args, **kwargs)
     return decorated_function
 
