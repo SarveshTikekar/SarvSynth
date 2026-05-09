@@ -103,14 +103,16 @@ const PatientDashboard = () => {
   const wealthData = useMemo(() => transformWealthData(data.advanced.wealth_trajectory), [data.advanced.wealth_trajectory]);
   const mortalityData = useMemo(() => transformMortalityData(data.advanced.mortality_hazard_by_quintiles), [data.advanced.mortality_hazard_by_quintiles]);
 
-  // 1. Map KPI Data (Injecting prevValues from backend)
+  // 1. Map KPI Data (Injecting prevValues from new historical_data structure)
+  // historical_data is grouped by period: { last_week: { total_patients: X, ... }, last_month: {...}, last_year: {...} }
+  const hist = data.kpis.historical_data || {};
   const kpiData = [
     {
       title: "Total Patients",
       value: data.kpis.total_patients || 0,
-      prevWeek: data.kpis.historical_comparisons?.total_patients?.prevWeek,
-      prevMonth: data.kpis.historical_comparisons?.total_patients?.prevMonth,
-      prevYear: data.kpis.historical_comparisons?.total_patients?.prevYear,
+      prevWeek: hist.last_week?.total_patients,
+      prevMonth: hist.last_month?.total_patients,
+      prevYear: hist.last_year?.total_patients,
       icon: Users,
       iconBg: "bg-blue-50",
       iconColor: "text-blue-600",
@@ -119,32 +121,32 @@ const PatientDashboard = () => {
     {
       title: "Active Rate",
       value: data.kpis.active_patient_rate || 0,
-      prevWeek: data.kpis.historical_comparisons?.active_patient_rate?.prevWeek,
-      prevMonth: data.kpis.historical_comparisons?.active_patient_rate?.prevMonth,
-      prevYear: data.kpis.historical_comparisons?.active_patient_rate?.prevYear,
+      prevWeek: hist.last_week?.active_patient_rate,
+      prevMonth: hist.last_month?.active_patient_rate,
+      prevYear: hist.last_year?.active_patient_rate,
       sentiment: "higher-is-better",
       icon: Heart,
       iconBg: "bg-rose-50",
       iconColor: "text-rose-600",
-      infoText: "Percentage of patients with an encounter in the last 12 months."
+      infoText: "Percentage of patients currently alive relative to total registered."
     },
     {
       title: "Gender Balance",
       value: data.kpis.gender_balance_ratio || 0,
-      prevWeek: data.kpis.historical_comparisons?.gender_balance_ratio?.prevWeek,
-      prevMonth: data.kpis.historical_comparisons?.gender_balance_ratio?.prevMonth,
-      prevYear: data.kpis.historical_comparisons?.gender_balance_ratio?.prevYear,
+      prevWeek: hist.last_week?.gender_balance,
+      prevMonth: hist.last_month?.gender_balance,
+      prevYear: hist.last_year?.gender_balance,
       icon: Users2,
       iconBg: "bg-purple-50",
       iconColor: "text-purple-600",
-      infoText: "Ratio of female to male patients."
+      infoText: "Ratio of male to female patients."
     },
     {
       title: "Mean Income",
       value: data.kpis.mean_family_income || 0,
-      prevWeek: data.kpis.historical_comparisons?.mean_family_income?.prevWeek,
-      prevMonth: data.kpis.historical_comparisons?.mean_family_income?.prevMonth,
-      prevYear: data.kpis.historical_comparisons?.mean_family_income?.prevYear,
+      prevWeek: hist.last_week?.mean_income,
+      prevMonth: hist.last_month?.mean_income,
+      prevYear: hist.last_year?.mean_income,
       icon: DollarSign,
       iconBg: "bg-emerald-50",
       iconColor: "text-emerald-600",
@@ -153,9 +155,9 @@ const PatientDashboard = () => {
     {
       title: "Median Income",
       value: data.kpis.median_family_income || 0,
-      prevWeek: data.kpis.historical_comparisons?.median_family_income?.prevWeek,
-      prevMonth: data.kpis.historical_comparisons?.median_family_income?.prevMonth,
-      prevYear: data.kpis.historical_comparisons?.median_family_income?.prevYear,
+      prevWeek: hist.last_week?.median_income,
+      prevMonth: hist.last_month?.median_income,
+      prevYear: hist.last_year?.median_income,
       icon: TrendingUp,
       iconBg: "bg-orange-50",
       iconColor: "text-orange-600",
@@ -164,9 +166,9 @@ const PatientDashboard = () => {
     {
       title: "Avg Patient Age",
       value: data.kpis.avg_patient_age || 0,
-      prevWeek: data.kpis.historical_comparisons?.avg_patient_age?.prevWeek,
-      prevMonth: data.kpis.historical_comparisons?.avg_patient_age?.prevMonth,
-      prevYear: data.kpis.historical_comparisons?.avg_patient_age?.prevYear,
+      prevWeek: hist.last_week?.avg_age,
+      prevMonth: hist.last_month?.avg_age,
+      prevYear: hist.last_year?.avg_age,
       icon: ClockIcon,
       iconBg: "bg-cyan-50",
       iconColor: "text-cyan-600",
@@ -175,9 +177,9 @@ const PatientDashboard = () => {
     {
       title: "Marriage Rate",
       value: data.kpis.married_rate || 0,
-      prevWeek: data.kpis.historical_comparisons?.married_rate?.prevWeek,
-      prevMonth: data.kpis.historical_comparisons?.married_rate?.prevMonth,
-      prevYear: data.kpis.historical_comparisons?.married_rate?.prevYear,
+      prevWeek: hist.last_week?.married_rate,
+      prevMonth: hist.last_month?.married_rate,
+      prevYear: hist.last_year?.married_rate,
       icon: Activity,
       iconBg: "bg-pink-50",
       iconColor: "text-pink-600",
@@ -186,9 +188,9 @@ const PatientDashboard = () => {
     {
       title: "Higher Ed Rate",
       value: data.kpis.higher_education_rate || 0,
-      prevWeek: data.kpis.historical_comparisons?.higher_education_rate?.prevWeek,
-      prevMonth: data.kpis.historical_comparisons?.higher_education_rate?.prevMonth,
-      prevYear: data.kpis.historical_comparisons?.higher_education_rate?.prevYear,
+      prevWeek: hist.last_week?.higher_education_rate,
+      prevMonth: hist.last_month?.higher_education_rate,
+      prevYear: hist.last_year?.higher_education_rate,
       icon: GraduationCap,
       iconBg: "bg-sky-50",
       iconColor: "text-sky-600",

@@ -10,6 +10,63 @@ from datetime import datetime, timezone
 import builtins
 from functools import reduce
 from pyspark.sql import DataFrame
+from pyspark.sql.functions import date_sub as spark_date_sub
+
+def calculateHistoricalTrends(df):
+    """ Calculate KPI snapshots for historical periods (last week/month/year).
+        Uses birth_date and death_date to reconstruct the patient population
+        as it would have appeared at each reference date. """
+
+    mapping = {"last_week": 7, "last_month": 30, "last_year": 365}
+    trends = {}
+
+    for period_name, num_days in mapping.items():
+
+        # Reconstruct the population as it existed N days ago
+        ref_date = spark_date_sub(current_date(), num_days)
+        df_filtered = df.filter(
+            (col("birth_date") <= ref_date) &
+            ((col("death_date").isNull()) | (col("death_date") >= ref_date))
+        )
+
+        patient_count = df_filtered.count()
+        if patient_count == 0:
+            continue
+
+        active_patient_rt = int((df_filtered.filter(isnull(col("death_date"))).count() / patient_count) * 100)
+        
+        female_count = df_filtered.filter(col("gender") == "F").count()
+        gender_ratio = int((df_filtered.filter(col("gender") == "M").count() / (female_count if female_count > 0 else 1)) * 100)
+
+        stats = df_filtered.filter(isnull(col("death_date"))).agg(
+                        mean("family_income").alias("mean"),
+                        percentile_approx("family_income", 0.5).alias("median")
+                    ).first()
+        mean_fi, median_fi = stats["mean"] or 0, stats["median"] or 0
+
+        end_date = coalesce(col("death_date"), current_date())
+        df_filtered_with_age = df_filtered.withColumn("age", (datediff(end_date, col("birth_date")) / 365.25))
+        avg_age = df_filtered_with_age.filter(isnull(col("death_date"))).select(mean("age")).first()[0]
+        avg_age = builtins.round(float(avg_age), 1) if avg_age else 0.0
+
+        married_count = df_filtered.filter(col("marital_status") == "M").count()
+        married_rt = builtins.round((married_count / patient_count) * 100, 1) if patient_count > 0 else 0.0
+
+        doc_count = df_filtered.filter(col("doctorate") != "No doctorate").count()
+        doc_rt = builtins.round((doc_count / patient_count) * 100, 1) if patient_count > 0 else 0.0
+
+        trends[period_name] = {
+            "total_patients": patient_count,
+            "active_patient_rate": active_patient_rt,
+            "mean_income": int(mean_fi),
+            "median_income": int(median_fi),
+            "avg_age": avg_age,
+            "married_rate": married_rt,
+            "gender_balance": gender_ratio,
+            "higher_education_rate": doc_rt
+        }
+
+    return trends
 
 async def calculateKPIS(df, supabase): 
     print("Calculating Patient KPIs...")
@@ -48,6 +105,7 @@ async def calculateKPIS(df, supabase):
             avg_patient_age = avg_age,
             married_rate = married_rt,
             higher_education_rate = doc_rt,
+            historical_data = calculateHistoricalTrends(df)
         ).dict(),
         "updated_at": datetime.now(timezone.utc).isoformat()
     }

@@ -31,32 +31,70 @@ ENCOUNTERS_SCHEMA = StructType([
     StructField("created_at", StringType(), True)
 ])
 
-def _gen_hist(val):
-    if val is None: return {"prevWeek": 0, "prevMonth": 0, "prevYear": 0}
-    return {
-        "prevWeek": builtins.round(float(val) * 0.98, 2),
-        "prevMonth": builtins.round(float(val) * 0.92, 2),
-        "prevYear": builtins.round(float(val) * 0.75, 2)
-    }
+def calculateHistoricalTrends(df):
+    """ Calculate encounter KPI snapshots for historical periods (last week/month/year).
+        Reconstructs total encounter metrics as they existed N days ago. """
+
+    mapping = {"last_week": 7, "last_month": 30, "last_year": 365}
+    trends = {}
+
+    for period_name, num_days in mapping.items():
+
+        # All encounters that had started by the reference date
+        ref_date = date_sub(current_date(), num_days)
+        df_filtered = df.filter(col("visit_start") <= ref_date)
+
+        total_vol = df_filtered.count()
+        if total_vol == 0:
+            continue
+
+        total_rev = df_filtered.agg(spark_sum("visting_total_fees")).first()[0] or 0.0
+
+        dur_df = df_filtered.withColumn("duration_hours", (unix_timestamp("visit_end") - unix_timestamp("visit_start")) / 3600.0)
+        avg_dur = dur_df.agg(avg("duration_hours")).first()[0] or 0.0
+
+        oop_df = df_filtered.withColumn("oop", col("visting_total_fees") - coalesce(col("coverage"), lit(0.0)))
+        avg_oop = oop_df.agg(avg("oop")).first()[0] or 0.0
+
+        avg_base = df_filtered.agg(avg("visiting_base_fees")).first()[0] or 0.0
+        total_cov = df_filtered.agg(spark_sum("coverage")).first()[0] or 0.0
+        unique_pts = df_filtered.agg(countDistinct("uuid")).first()[0] or 0
+
+        prac_load_df = df_filtered.groupBy("practioner_id").agg(count("*").alias("enc_count"))
+        avg_prac = prac_load_df.agg(avg("enc_count")).first()[0] or 0.0
+
+        trends[period_name] = {
+            "total_visit_volume": int(total_vol),
+            "total_revenue_generated": builtins.round(float(total_rev), 2),
+            "average_encounter_duration_hours": builtins.round(float(avg_dur), 2),
+            "average_patient_out_of_pocket": builtins.round(float(avg_oop), 2),
+            "average_base_fee": builtins.round(float(avg_base), 2),
+            "total_covered_amount": builtins.round(float(total_cov), 2),
+            "unique_patients_seen": int(unique_pts),
+            "average_practitioner_load": builtins.round(float(avg_prac), 2)
+        }
+
+    return trends
 
 async def calculateKPIS(df, supabase):
     print("Calculating Encounter KPIs...")
-    trailing_30_df = df.filter(col("visit_start") >= date_sub(current_date(), 30))
     
-    total_vol = trailing_30_df.count()
-    total_rev = trailing_30_df.agg(spark_sum("visting_total_fees")).first()[0] or 0.0
+    total_vol = df.count()
+    if total_vol == 0: return
+
+    total_rev = df.agg(spark_sum("visting_total_fees")).first()[0] or 0.0
     
-    dur_df = trailing_30_df.withColumn("duration_hours", (unix_timestamp("visit_end") - unix_timestamp("visit_start")) / 3600.0)
+    dur_df = df.withColumn("duration_hours", (unix_timestamp("visit_end") - unix_timestamp("visit_start")) / 3600.0)
     avg_dur = dur_df.agg(avg("duration_hours")).first()[0] or 0.0
     
-    oop_df = trailing_30_df.withColumn("oop", col("visting_total_fees") - coalesce(col("coverage"), lit(0.0)))
+    oop_df = df.withColumn("oop", col("visting_total_fees") - coalesce(col("coverage"), lit(0.0)))
     avg_oop = oop_df.agg(avg("oop")).first()[0] or 0.0
     
-    avg_base = trailing_30_df.agg(avg("visiting_base_fees")).first()[0] or 0.0
-    total_cov = trailing_30_df.agg(spark_sum("coverage")).first()[0] or 0.0
-    unique_pts = trailing_30_df.agg(countDistinct("uuid")).first()[0] or 0
+    avg_base = df.agg(avg("visiting_base_fees")).first()[0] or 0.0
+    total_cov = df.agg(spark_sum("coverage")).first()[0] or 0.0
+    unique_pts = df.agg(countDistinct("uuid")).first()[0] or 0
     
-    prac_load_df = trailing_30_df.groupBy("practioner_id").agg(count("*").alias("enc_count"))
+    prac_load_df = df.groupBy("practioner_id").agg(count("*").alias("enc_count"))
     avg_prac = prac_load_df.agg(avg("enc_count")).first()[0] or 0.0
 
     kpi_data = encountersKPIS(
@@ -68,16 +106,7 @@ async def calculateKPIS(df, supabase):
         total_covered_amount=builtins.round(float(total_cov), 2),
         unique_patients_seen=int(unique_pts),
         average_practitioner_load=builtins.round(float(avg_prac), 2),
-        historical_comparisons={
-            "total_visit_volume": _gen_hist(total_vol),
-            "total_revenue_generated": _gen_hist(total_rev),
-            "average_encounter_duration_hours": _gen_hist(avg_dur),
-            "average_patient_out_of_pocket": _gen_hist(avg_oop),
-            "average_base_fee": _gen_hist(avg_base),
-            "total_covered_amount": _gen_hist(total_cov),
-            "unique_patients_seen": _gen_hist(unique_pts),
-            "average_practitioner_load": _gen_hist(avg_prac)
-        }
+        historical_comparisons=calculateHistoricalTrends(df)
     ).dict()
 
     data = {

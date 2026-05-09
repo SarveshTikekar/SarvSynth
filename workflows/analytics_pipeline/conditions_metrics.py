@@ -11,13 +11,76 @@ from functools import reduce
 
 month_to_num_mapping = {1: "Jan", 2: "Feb", 3: "Mar", 4: "Apr", 5: "May", 6: "Jun", 7: "Jul", 8: "Aug", 9: "Sep", 10: "Oct", 11: "Nov", 12: "Dec"}
 
-def _gen_hist(val):
-    if val is None: return {"prevWeek": 0, "prevMonth": 0, "prevYear": 0}
-    return {
-        "prevWeek": builtins.round(float(val) * 0.98, 2),
-        "prevMonth": builtins.round(float(val) * 0.92, 2),
-        "prevYear": builtins.round(float(val) * 0.75, 2)
-    }
+def calculateHistoricalTrends(df):
+    """ Calculate condition KPI snapshots for historical periods (last week/month/year).
+        Reconstructs the condition population as it existed N days ago. """
+
+    mapping = {"last_week": 7, "last_month": 30, "last_year": 365}
+    trends = {}
+
+    for period_name, num_days in mapping.items():
+
+        # All conditions that had been recorded by the reference date
+        ref_date = date_sub(current_date(), num_days)
+        df_filtered = df.filter(col("condition_record_date") <= ref_date)
+
+        total_count = df_filtered.count()
+        if total_count == 0:
+            continue
+
+        # KPI-1 Active burden as of ref_date: no abetment OR abetment happened after ref_date
+        curr_act_burd = df_filtered.filter(
+            (col("date_of_abetment").isNull()) | (col("date_of_abetment") > ref_date)
+        ).count()
+
+        # KPI-2 Recovery rate as of ref_date: abetment happened on or before ref_date
+        recovered = df_filtered.filter(
+            (col("date_of_abetment").isNotNull()) & (col("date_of_abetment") <= ref_date)
+        ).count()
+        glob_reco_rate = builtins.round((recovered / total_count) * 100, 2)
+
+        # KPI-3 Patient complexity score
+        refined_df = df_filtered.filter(
+            (col("date_of_abetment").isNotNull()) & (col("date_of_abetment") <= ref_date)
+        ).groupBy("uuid").agg(countDistinct("medical_concepts").alias("smmc"))
+        numerator = refined_df.agg(spark_sum("smmc")).first()[0] or 0
+        pat_comp_score = int(math.ceil(numerator / (refined_df.count() or 1)))
+
+        # KPI-4 Average time to cure
+        avg_time_cure_val = df_filtered.filter(
+            (col("date_of_abetment").isNotNull()) & (col("date_of_abetment") <= ref_date)
+        ).agg(avg(datediff(col("date_of_abetment"), col("condition_record_date")))).first()[0]
+        avg_time_cure = int(math.ceil(avg_time_cure_val)) if avg_time_cure_val is not None else 0
+
+        # KPI-5 Admission rate (30 days before the ref_date)
+        adm_30 = df_filtered.filter(
+            col("condition_record_date") >= date_sub(ref_date, 30)
+        ).count()
+
+        # KPI-6 Total Diagnoses
+        total_diag = int(total_count)
+
+        # KPI-7 Unique Conditions
+        unique_cond = int(df_filtered.select("medical_concepts").distinct().count())
+
+        # KPI-8 Chronic Burden (active > 90 days as of ref_date)
+        chronic_burden = df_filtered.filter(
+            ((col("date_of_abetment").isNull()) | (col("date_of_abetment") > ref_date)) &
+            (datediff(ref_date, col("condition_record_date")) >= 90)
+        ).count()
+
+        trends[period_name] = {
+            "current_active_burden": int(curr_act_burd),
+            "global_recovery_rate": float(glob_reco_rate),
+            "patient_complexity_score": int(pat_comp_score),
+            "average_time_to_cure": int(avg_time_cure),
+            "admission_rate_last_30_days": int(adm_30),
+            "total_diagnoses": int(total_diag),
+            "unique_conditions": int(unique_cond),
+            "chronic_condition_burden": int(chronic_burden)
+        }
+
+    return trends
 
 async def calculateKPIS(df, supabase):
     print("Calculating Condition KPIs...")
@@ -64,16 +127,7 @@ async def calculateKPIS(df, supabase):
         total_diagnoses=total_diag,
         unique_conditions=unique_cond,
         chronic_condition_burden=chronic_burden,
-        historical_comparisons={
-            "current_active_burden": _gen_hist(curr_act_burd),
-            "global_recovery_rate": _gen_hist(glob_reco_rate),
-            "patient_complexity_score": _gen_hist(pat_comp_score),
-            "average_time_to_cure": _gen_hist(avg_time_cure),
-            "admission_rate_last_30_days": _gen_hist(adm_30),
-            "total_diagnoses": _gen_hist(total_diag),
-            "unique_conditions": _gen_hist(unique_cond),
-            "chronic_condition_burden": _gen_hist(chronic_burden)
-        }
+        historical_comparisons=calculateHistoricalTrends(df)
     ).dict()
 
     data = {

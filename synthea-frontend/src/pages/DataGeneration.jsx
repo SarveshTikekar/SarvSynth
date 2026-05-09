@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import DataGenerationButton from '../components/DataGenerationButton';
-import { Terminal, Database, Play, AlertCircle, CheckCircle, Loader, Cpu, Server, HardDrive } from 'lucide-react';
+import { generatePatients } from '../api/api';
+import { Terminal, Database, Play, AlertCircle, CheckCircle, Loader, Cpu, Server, HardDrive, MapPin, Users } from 'lucide-react';
 
 const DataGeneration = () => {
   const [status, setStatus] = useState('idle'); // idle, generating, complete, error
   const [progress, setProgress] = useState(0);
   const [logs, setLogs] = useState([]);
+  const [numPatients, setNumPatients] = useState(150);
+  const [stateName, setStateName] = useState('');
   const logsEndRef = useRef(null);
 
   // Auto-scroll logs
@@ -18,20 +21,19 @@ const DataGeneration = () => {
     setLogs(prev => [...prev, { msg, type, timestamp }]);
   };
 
-  const handleGenerationStart = () => {
+  const handleGenerate = async () => {
     setStatus('generating');
     setProgress(0);
     setLogs([]);
-    addLog("Initializing Synthea Generation Sequence...", 'system');
+    addLog(`Initializing Synthea Generation Sequence for ${numPatients} patients in ${stateName || 'Random State'}...`, 'system');
 
-    // Mock Progress Simulation (since the actual API might be instant or async)
+    // Start progress simulation
     let prog = 0;
     const interval = setInterval(() => {
-      prog += Math.floor(Math.random() * 10);
-      if (prog > 100) prog = 100;
+      prog += Math.floor(Math.random() * 5);
+      if (prog > 95) prog = 95;
       setProgress(prog);
 
-      // Random logs
       const messages = [
         "Allocating memory buffers...",
         "Loading demographic templates...",
@@ -40,26 +42,23 @@ const DataGeneration = () => {
         "Exporting to CSV...",
         "Triggering ETL Pipeline..."
       ];
-      if (prog < 100 && Math.random() > 0.7) {
+      if (prog < 95 && Math.random() > 0.8) {
         addLog(messages[Math.floor(Math.random() * messages.length)]);
       }
+    }, 400);
 
-      if (prog === 100) {
-        clearInterval(interval);
-      }
-    }, 300);
-  };
-
-  const handleSuccess = (data) => {
-    setStatus('complete');
-    setProgress(100);
-    addLog("Data Generation Successful!", 'success');
-    addLog(`Processed ${data.count || 'N/A'} records.`, 'info');
-  };
-
-  const handleError = (err) => {
-    setStatus('error');
-    addLog(`Detailed Error: ${err.message}`, 'error');
+    try {
+      const result = await generatePatients({ numberOfPatients: numPatients, state: stateName });
+      clearInterval(interval);
+      setProgress(100);
+      setStatus('complete');
+      addLog("Data Generation Successful!", 'success');
+      addLog(result.message || "Records generation triggered successfully.", 'info');
+    } catch (err) {
+      clearInterval(interval);
+      setStatus('error');
+      addLog(`Error: ${err.message || 'Unknown error occurred'}`, 'error');
+    }
   };
 
   return (
@@ -80,11 +79,41 @@ const DataGeneration = () => {
               <Cpu size={16} /> System Controls
             </h2>
 
-            <div className="space-y-4">
+            <div className="space-y-6">
+              {/* Configuration Inputs */}
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase mb-2 flex items-center gap-2">
+                    <Users size={14} /> Number of Patients
+                  </label>
+                  <input 
+                    type="number" 
+                    value={numPatients}
+                    onChange={(e) => setNumPatients(parseInt(e.target.value) || 0)}
+                    placeholder="e.g. 150"
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all font-medium text-slate-700"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase mb-2 flex items-center gap-2">
+                    <MapPin size={14} /> Target State (Optional)
+                  </label>
+                  <input 
+                    type="text" 
+                    value={stateName}
+                    onChange={(e) => setStateName(e.target.value)}
+                    placeholder="e.g. Massachusetts"
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all font-medium text-slate-700"
+                  />
+                  <p className="text-[10px] text-slate-400 mt-1.5 ml-1 italic">Leave empty for a random US state selection.</p>
+                </div>
+              </div>
+
               <DataGenerationButton
-                onStart={handleGenerationStart}
-                onSuccess={handleSuccess}
-                onError={handleError}
+                numberOfPatients={numPatients}
+                onGenerate={handleGenerate}
+                isLoading={status === 'generating'}
               />
 
               <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 text-xs text-slate-500 leading-relaxed">
@@ -97,7 +126,7 @@ const DataGeneration = () => {
             <div className="mt-8 pt-8 border-t border-slate-100">
               <h3 className="text-xs font-bold text-slate-400 uppercase mb-4">Pipeline Status</h3>
               <div className="flex items-center gap-3 mb-2">
-                <div className={`w-3 h-3 rounded-full ${status === 'generating' ? 'bg-amber-400 animate-pulse' : (status === 'complete' ? 'bg-emerald-500' : 'bg-slate-300')}`}></div>
+                <div className={`w-3 h-3 rounded-full ${status === 'generating' ? 'bg-amber-400 animate-pulse' : (status === 'complete' ? 'bg-emerald-500' : (status === 'error' ? 'bg-rose-500' : 'bg-slate-300'))}`}></div>
                 <span className="font-bold text-slate-700 capitalize">{status === 'idle' ? 'Ready' : status}</span>
               </div>
               {status === 'generating' && (

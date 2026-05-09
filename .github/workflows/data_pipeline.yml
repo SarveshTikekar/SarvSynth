@@ -50,13 +50,25 @@ jobs:
           curl -LsSf https://astral.sh/uv/install.sh | sh
           uv sync
 
-      - name: 5. Generate Synthetic Data
+      - name: 5. Resolve Target Region
+        id: resolve_region
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            REGION=$(python3 workflows/scripts/randomised_state_return.py)
+            echo "Scheduled run - randomly selected: $REGION"
+          else
+            REGION="${{ github.event.inputs.region || 'Massachusetts' }}"
+            echo "Manual run - using: $REGION"
+          fi
+          echo "region=$REGION" >> $GITHUB_OUTPUT
+
+      - name: 6. Generate Synthetic Data
         run: |
           chmod +x workflows/scripts/synthea-init.sh
-          ./workflows/scripts/synthea-init.sh ${{ github.event.inputs.num_patients || '250' }} ${{ github.event.inputs.region || 'Massachusetts' }}
+          ./workflows/scripts/synthea-init.sh ${{ github.event.inputs.num_patients || '250' }} "${{ steps.resolve_region.outputs.region }}"
 
-      - name: 6. Run ETL Ingestion
+      - name: 7. Run ETL Ingestion
         run: uv run python3 -m workflows.etl_runner
 
-      - name: 7. Run Analytics
+      - name: 8. Run Analytics
         run: uv run python3 -m workflows.analytics_runner

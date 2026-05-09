@@ -10,6 +10,7 @@ class patientKPIS(BaseModel):
     avg_patient_age: float = Field(0.0, description="Average age of the current patient population")
     married_rate: float = Field(0.0, description="Percentage of patients who are married")
     higher_education_rate: float = Field(0.0, description="Percentage of patients with a doctorate or higher education level")
+    historical_data: Dict[str, Dict[str, Any]] = Field(default_factory=dict, description="Historical data for each KPI to track trends over time")
 
 class patientMetrics(BaseModel):
     economic_dependence_ratio: int = 0

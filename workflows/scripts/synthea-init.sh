@@ -3,8 +3,12 @@ set -e
 
 # --- Configuration ---
 NUMBER_OF_PATIENTS=${1:-150}
-STATE=${2:-Massachusetts}
 PROJ_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
+if [ -n "$2" ]; then
+    STATE=$(uv run python3 "${PROJ_DIR}/workflows/scripts/utils.py" "$2")
+else
+    STATE=$(uv run python3 "${PROJ_DIR}/workflows/scripts/randomised_state_return.py")
+fi
 REPO_URL="https://github.com/synthetichealth/synthea.git"
 SYNTHEA_DIR="$HOME/synthea"
 DATASET_DIR="$PROJ_DIR/Datasets"
@@ -15,15 +19,15 @@ log_msg() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a "$LOG_FILE"
 }
 
-log_msg "🚀 Starting Synthea Data Generation for $NUMBER_OF_PATIENTS patients..."
+log_msg "Starting Synthea Data Generation for $NUMBER_OF_PATIENTS patients..."
 
 # --- 1. Clone/Update Logic ---
 if [ ! -d "$SYNTHEA_DIR" ]; then
-    log_msg "🔄 Synthea not found. Cloning repository..."
+    log_msg "Synthea not found. Cloning repository..."
     git clone "$REPO_URL" "$SYNTHEA_DIR"
     FIRST_RUN=true
 else
-    log_msg "✅ Synthea repo found at $SYNTHEA_DIR."
+    log_msg "Synthea repo found at $SYNTHEA_DIR."
     FIRST_RUN=false
 fi
 
@@ -31,7 +35,7 @@ fi
 PROPERTIES_FILE="$SYNTHEA_DIR/src/main/resources/synthea.properties"
 
 if [ "$FIRST_RUN" = true ]; then
-    log_msg "⚙️  Configuring synthea.properties (One-time setup)..."
+    log_msg "Configuring synthea.properties (One-time setup)..."
     
     # Enable CSV, Append Mode, and set Output Directory
     sed -i 's/^exporter.fhir.export *= *.*/exporter.fhir.export = true/' "$PROPERTIES_FILE"
@@ -40,17 +44,17 @@ if [ "$FIRST_RUN" = true ]; then
     sed -i "s|^exporter.baseDirectory *= *.*|exporter.baseDirectory = $DATASET_DIR|" "$PROPERTIES_FILE"
     
     cd "$SYNTHEA_DIR"
-    log_msg "🔨 Building Synthea (skipping tests for speed)..."
+    log_msg "Building Synthea (skipping tests for speed)..."
     ./gradlew build -x test
 else
-    log_msg "⏩ Skipping build (already built previously)."
+    log_msg "Skipping build (already built previously)."
 fi
 
 # --- 3. Execute Generation ---
 mkdir -p "$DATASET_DIR"
 cd "$SYNTHEA_DIR"
 
-log_msg "🏃 Executing Synthea for $NUMBER_OF_PATIENTS patients in $STATE..."
+log_msg "Executing Synthea for $NUMBER_OF_PATIENTS patients in $STATE..."
 ./run_synthea -p "$NUMBER_OF_PATIENTS" "$STATE" | tee -a "$LOG_FILE"
 
-log_msg "✅ Success! Data generated in: $DATASET_DIR"
+log_msg "Success! Data generated in: $DATASET_DIR"

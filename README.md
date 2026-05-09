@@ -8,19 +8,19 @@ The SarvSynth platform provides an integrated perspective on hospital operations
 
 ## Core Capabilities
 
-- **Executive Intelligence**: Unified aggregate statistics across all clinical and administrative departments.
+- **Executive Intelligence**: Unified aggregate statistics across all clinical and administrative departments with **All-Time** cumulative benchmarking.
+- **Temporal Reconstruction**: Advanced historical trend engine that snapshots population health and operational metrics as they existed at specific points in time (Last Week/Month/Year).
 - **Population Health Analytics**: Granular analysis of patient demographics, socioeconomic dependence, and mortality risk modeling.
 - **Pathological Tracking**: Longitudinal monitoring of condition incidence, recurrence intervals, and recovery efficacy.
-- **Operational Diagnostics**: Revenue cycle analysis, encounter throughput metrics, and practitioner engagement diagnostics.
-- **Refined Interface Design**: Professional typography utilizing Signika and Zalando Sans, medical-standard iconography, and seamless state transitions.
+- **Data Operations Center**: Interactive interface for triggering regionalized synthetic data generation with precise control over patient volume and geographic targeting.
 
 ## Technical Architecture
 
 - **Frontend**: React (Vite) utilizing Tailwind CSS with Recharts and ECharts for high-density data visualization.
-- **Backend**: Asynchronous Flask API utilizing dependency injection for secure and efficient Supabase connectivity.
-- **Data Engineering**: PySpark-driven ETL and analytics pipelines for high-throughput metric derivation.
+- **Backend**: Asynchronous Flask API utilizing dependency injection and schema-anchored Supabase connectivity.
+- **Data Engineering**: PySpark-driven ETL and **Temporal Analytics Pipelines** for high-throughput metric derivation and historical population reconstruction.
 - **Data Persistence**: Supabase (PostgreSQL) for structured clinical records and pre-calculated analytical metrics.
-- **Deployment**: Native configuration for Vercel Serverless Functions and static asset hosting.
+- **Deployment**: Native configuration for Vercel Serverless Functions and GitHub Actions for automated regionalized data refreshes.
 
 ## Deployment and Installation
 

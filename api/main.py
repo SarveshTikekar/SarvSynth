@@ -67,31 +67,23 @@ def get_patients(supabase):
     except Exception as e:
         return jsonify({'error': f'Failed to retrieve patients: {str(e)}'}), 500
 
-@app.route('/api/get_patient_count', methods=['GET'])
-@with_supabase
-def get_patient_count(supabase):
-    """Return patient count from Supabase"""
-    try:
-        response = supabase.table("patients").select("uuid", count="exact").execute()
-        return jsonify({
-            'status': 200,
-            'patient_count': response.count,
-            'message': 'Patient count returned successfully'
-        })
-    except Exception as e:
-        return jsonify({"status": 500, "error": str(e)}), 500
-
 @app.route('/api/generate_data/', methods=['GET'])
 def generate_data():
     """Trigger data generation script (No DB dependency here)"""
     try:
         num_patients = request.args.get('num_patients', default=10, type=int)
-        script_path = os.path.join(project_root, "scripts", "synthea-init.sh")
+        state = request.args.get('state', default=None, type=str)
+        script_path = os.path.join(project_root, "workflows", "scripts", "synthea-init.sh")
 
         if not os.path.exists(script_path):
             return jsonify({"status": "error", "message": "Synthea script not found"}), 404
 
-        subprocess.run([script_path, str(num_patients)], check=True)
+        # Pass state as the second argument if provided
+        cmd = [script_path, str(num_patients)]
+        if state:
+            cmd.append(state)
+            
+        subprocess.run(cmd, check=True)
         
         return jsonify({
             "status": "success",
@@ -151,11 +143,6 @@ def encounters_dashboard(supabase):
         'metrics': metrics.get('metrics', {}),
         'advanced_metrics': metrics.get('advanced_metrics', {})
     })
-
-@app.route('/api/quick_dashboard', methods=['GET'])
-def quick_dashboard_data():
-    """Legacy endpoint for raw patient data"""
-    return get_patients()
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=3001, debug=True)

@@ -3,11 +3,11 @@ import axios from "axios"
 /*For betterment we would use functions*/
 const API_URL = "/api"
 
-export const generatePatients = async ({ numberOfPatients }) => {
+export const generatePatients = async ({ numberOfPatients, state }) => {
 
 	try {
 
-		const resp = await axios.get(`${API_URL}/generate_data`, { params: { num_patients: numberOfPatients } })
+		const resp = await axios.get(`${API_URL}/generate_data`, { params: { num_patients: numberOfPatients, state } })
 
 		if (resp.status == 200)
 			return resp.data

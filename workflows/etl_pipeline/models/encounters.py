@@ -10,8 +10,7 @@ class encountersKPIS(BaseModel):
     total_covered_amount: float = Field(0.0, description="Total amount paid by insurers")
     unique_patients_seen: int = Field(0, description="Number of distinct patients seen in 30 days")
     average_practitioner_load: float = Field(0.0, description="Average number of encounters handled per practitioner")
-
-    historical_comparisons: Dict[str, Dict[str, float]] = Field(default_factory=dict, description="Nested dictionary for prevWeek, prevMonth, prevYear values for each metric")
+    historical_comparisons: Dict[str, Dict[str, Any]] = Field(default_factory=dict, description="Nested dictionary for prevWeek, prevMonth, prevYear values for each metric")
 
 class encountersMetrics(BaseModel):
     encounters_by_type: List[Dict[str, Any]] = Field(default_factory=list, description="Distribution of encounters segmented by encounter_type")
