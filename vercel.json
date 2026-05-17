@@ -14,10 +14,11 @@
     }
   ],
   "routes": [
-    { "handle": "filesystem" },
     { "src": "/api/(.*)", "dest": "/api/main.py" },
-    { "src": "/assets/(.*)", "dest": "/synthea-frontend/dist/assets/$1" },
-    { "src": "/vite.svg", "dest": "/synthea-frontend/dist/vite.svg" },
-    { "src": "/(.*)", "dest": "/synthea-frontend/dist/index.html" }
+    {
+      "src": "/(.*)\\.(js|css|png|svg|jpg|jpeg|gif|ico|woff|woff2|ttf|eot|map)$",
+      "dest": "/synthea-frontend/$1.$2"
+    },
+    { "src": "/(.*)", "dest": "/synthea-frontend/index.html" }
   ]
 }
