@@ -1,5 +1,4 @@
 import React from 'react';
-import { ResponsiveContainer } from 'recharts';
 import { Info } from "lucide-react";
 
 const AdvancedChartCard = ({ title, subtitle, icon: Icon, children, rightElement = null, infoText = "" }) => {
@@ -31,10 +30,8 @@ const AdvancedChartCard = ({ title, subtitle, icon: Icon, children, rightElement
                 {rightElement}
             </div>
 
-            <div className="flex-1 w-full min-h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                    {children}
-                </ResponsiveContainer>
+            <div className="flex-1 w-full min-h-[300px] relative">
+                {children}
             </div>
         </div>
     );

@@ -106,20 +106,7 @@ const Sidebar = ({ isOpen, setIsOpen, isMobile }) => {
                     })}
                 </nav>
 
-                {/* Footer / User Profile */}
-                <div className="p-4 border-t border-slate-100">
-                    <button className={`flex items-center gap-3 w-full p-2 rounded-xl hover:bg-slate-50 transition-colors ${isCollapsed ? 'justify-center' : ''}`}>
-                        <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-xs font-bold text-slate-600 shadow-sm">
-                            DR
-                        </div>
-                        {!isCollapsed && (
-                            <div className="text-left overflow-hidden">
-                                <p className="text-sm font-bold text-slate-700 truncate">Dr. Sarvesh</p>
-                                <p className="text-xs text-slate-500 truncate">System Administrator</p>
-                            </div>
-                        )}
-                    </button>
-                </div>
+
 
                 {/* Collapse Toggle (Desktop Only) */}
                 {!isMobile && (

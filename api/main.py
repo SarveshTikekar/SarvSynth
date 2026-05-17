@@ -6,9 +6,12 @@ import subprocess
 from functools import wraps
 
 # Ensuring the project root is in sys.path
-project_root = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+project_root = os.getcwd()
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
+
+from dotenv import load_dotenv
+load_dotenv(os.path.join(project_root, ".env"))
 
 # --- Flask App Initialization ---
 app = Flask(__name__)
@@ -69,10 +72,69 @@ def get_patients(supabase):
 
 @app.route('/api/generate_data/', methods=['GET'])
 def generate_data():
-    """Trigger data generation script (No DB dependency here)"""
+    """Trigger data generation script (either local or via GitHub Actions if configured)"""
     try:
-        num_patients = request.args.get('num_patients', default=10, type=int)
+        num_patients = request.args.get('num_patients', type=int)
+
+        if num_patients is None or num_patients <= 0:
+            raise ValueError("num_patients must be a positive integer")
+
         state = request.args.get('state', default=None, type=str)
+        
+        # Check if GitHub Action dispatch parameters are configured in the environment
+        github_token = os.getenv("GITHUB_TOKEN")
+        github_repo = os.getenv("GITHUB_REPOSITORY")
+        github_ref = os.getenv("GITHUB_REF", "main")
+        
+        if github_token and github_repo:
+            import urllib.request
+            import json
+            
+            workflow_filename = "data_pipeline.yml"
+            url = f"https://api.github.com/repos/{github_repo}/actions/workflows/{workflow_filename}/dispatches"
+            
+            # workflow dispatch inputs are always string mappings
+            payload = {
+                "ref": github_ref,
+                "inputs": {
+                    "num_patients": str(num_patients),
+                    "region": state if state else "Massachusetts"
+                }
+            }
+            
+            data = json.dumps(payload).encode('utf-8')
+            req = urllib.request.Request(
+                url,
+                data=data,
+                headers={
+                    "Accept": "application/vnd.github+json",
+                    "Authorization": f"Bearer {github_token}",
+                    "X-GitHub-Api-Version": "2022-11-28",
+                    "User-Agent": "SarvSynth-App",
+                    "Content-Type": "application/json"
+                },
+                method="POST"
+            )
+            
+            try:
+                with urllib.request.urlopen(req) as response:
+                    if response.status == 204:
+                        return jsonify({
+                            "status": "success",
+                            "message": f"GitHub Action successfully triggered: Generating {num_patients} patients in {state if state else 'Massachusetts'} region asynchronously on GitHub runners."
+                        }), 200
+                    else:
+                        return jsonify({
+                            "status": "error",
+                            "message": f"Failed to trigger GitHub Action: {response.status} {response.reason}"
+                        }), response.status
+            except Exception as github_err:
+                return jsonify({
+                    "status": "error",
+                    "message": f"GitHub Actions Dispatch failed: {str(github_err)}"
+                }), 500
+                
+        # Otherwise fallback to local subprocess generation
         script_path = os.path.join(project_root, "workflows", "scripts", "synthea-init.sh")
 
         if not os.path.exists(script_path):
@@ -87,7 +149,7 @@ def generate_data():
         
         return jsonify({
             "status": "success",
-            "message": f"{num_patients} patient records generation triggered"
+            "message": f"Local run triggered: {num_patients} patient records generated locally"
         }), 200
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500

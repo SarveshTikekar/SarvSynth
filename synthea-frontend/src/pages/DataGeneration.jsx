@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import DataGenerationButton from '../components/DataGenerationButton';
 import { generatePatients } from '../api/api';
-import { Terminal, Database, Play, AlertCircle, CheckCircle, Loader, Cpu, Server, HardDrive, MapPin, Users } from 'lucide-react';
+import { Terminal, Database, Play, AlertCircle, CheckCircle, Loader, Cpu, MapPin, Users } from 'lucide-react';
 
 const DataGeneration = () => {
   const [status, setStatus] = useState('idle'); // idle, generating, complete, error
@@ -74,7 +74,7 @@ const DataGeneration = () => {
 
         {/* Control Panel */}
         <div className="lg:col-span-1 space-y-6">
-          <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 p-6">
+          <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 p-6 h-[500px]">
             <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-6 flex items-center gap-2">
               <Cpu size={16} /> System Controls
             </h2>
@@ -122,75 +122,49 @@ const DataGeneration = () => {
               </div>
             </div>
 
-            {/* Status Indicator */}
-            <div className="mt-8 pt-8 border-t border-slate-100">
-              <h3 className="text-xs font-bold text-slate-400 uppercase mb-4">Pipeline Status</h3>
-              <div className="flex items-center gap-3 mb-2">
-                <div className={`w-3 h-3 rounded-full ${status === 'generating' ? 'bg-amber-400 animate-pulse' : (status === 'complete' ? 'bg-emerald-500' : (status === 'error' ? 'bg-rose-500' : 'bg-slate-300'))}`}></div>
-                <span className="font-bold text-slate-700 capitalize">{status === 'idle' ? 'Ready' : status}</span>
-              </div>
-              {status === 'generating' && (
-                <div className="w-full bg-slate-100 rounded-full h-2 mt-3 overflow-hidden">
-                  <div className="bg-teal-500 h-full transition-all duration-300 ease-out" style={{ width: `${progress}%` }}></div>
-                </div>
-              )}
-            </div>
+
           </div>
 
-          {/* Resources */}
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-blue-50 text-blue-600 rounded-lg"><HardDrive size={20} /></div>
-              <div>
-                <p className="text-xs font-bold text-slate-400 uppercase">Storage</p>
-                <p className="font-bold text-slate-900">45% Used</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-purple-50 text-purple-600 rounded-lg"><Server size={20} /></div>
-              <div>
-                <p className="text-xs font-bold text-slate-400 uppercase">Memory</p>
-                <p className="font-bold text-slate-900">2.4 GB</p>
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Terminal / Log Output */}
         <div className="lg:col-span-2">
-          <div className="bg-slate-900 rounded-2xl shadow-2xl shadow-slate-900/20 overflow-hidden flex flex-col h-[600px] border border-slate-800">
+          <div className="bg-slate-900 rounded-2xl shadow-2xl shadow-slate-900/20 overflow-hidden flex flex-col h-[500px] border border-slate-800">
             {/* Terminal Header */}
-            <div className="bg-slate-950 px-4 py-3 flex items-center justify-between border-b border-slate-800">
+            <div className="bg-[#161b22] px-4 py-3 flex items-center justify-between border-b border-[#21262d]">
               <div className="flex items-center gap-2">
-                <Terminal size={16} className="text-slate-500" />
-                <span className="text-xs font-mono font-bold text-slate-400">synthea-cli — watch</span>
+                <Terminal size={14} className="text-slate-400" />
+                <span className="text-xs font-mono font-bold text-slate-300">synthea-cli — watch</span>
               </div>
               <div className="flex gap-1.5">
-                <div className="w-2.5 h-2.5 rounded-full bg-red-500/20"></div>
-                <div className="w-2.5 h-2.5 rounded-full bg-amber-500/20"></div>
-                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/20"></div>
+                <div className="w-3 h-3 rounded-full bg-[#ff5f56]"></div>
+                <div className="w-3 h-3 rounded-full bg-[#ffbd2e]"></div>
+                <div className="w-3 h-3 rounded-full bg-[#27c93f]"></div>
               </div>
             </div>
 
             {/* Terminal Body */}
-            <div className="flex-1 p-4 font-mono text-xs md:text-sm overflow-y-auto custom-scrollbar-dark space-y-2">
+            <div className="flex-1 p-5 font-mono text-xs md:text-sm overflow-y-auto bg-[#0d1117] custom-scrollbar-dark space-y-2.5">
               {logs.length === 0 && (
-                <div className="h-full flex items-center justify-center text-slate-700 select-none">
-                  <p>Waiting for generation command...</p>
+                <div className="h-full flex items-center justify-center text-slate-500 select-none">
+                  <p className="font-mono text-xs">Waiting for generation command...</p>
                 </div>
               )}
               {logs.map((log, i) => (
-                <div key={i} className="flex gap-3 animate-fade-in-left">
-                  <span className="text-slate-600 shrink-0">[{log.timestamp}]</span>
-                  <span className={`
-                                        ${log.type === 'error' ? 'text-rose-400' : ''}
-                                        ${log.type === 'success' ? 'text-emerald-400' : ''}
-                                        ${log.type === 'system' ? 'text-blue-400' : ''}
-                                        ${log.type === 'info' ? 'text-slate-300' : ''}
-                                    `}>
-                    {log.type === 'system' && <span className="mr-2">ℹ</span>}
-                    {log.type === 'success' && <span className="mr-2">✔</span>}
-                    {log.type === 'error' && <span className="mr-2">✖</span>}
+                <div key={i} className="flex gap-3 items-start animate-fade-in-left leading-relaxed">
+                  <span className="text-slate-500 font-mono shrink-0 select-none">[{log.timestamp}]</span>
+                  <span className="shrink-0 font-mono font-bold select-none min-w-[75px]">
+                    {log.type === 'system' && <span className="text-[#58a6ff]">[SYSTEM]</span>}
+                    {log.type === 'success' && <span className="text-[#2ea44f]">[SUCCESS]</span>}
+                    {log.type === 'error' && <span className="text-[#cf222e]">[ERROR]</span>}
+                    {log.type === 'info' && <span className="text-[#8b949e]">[INFO]</span>}
+                  </span>
+                  <span className={`font-mono break-all
+                    ${log.type === 'error' ? 'text-rose-100' : ''}
+                    ${log.type === 'success' ? 'text-emerald-100' : ''}
+                    ${log.type === 'system' ? 'text-blue-100' : ''}
+                    ${log.type === 'info' ? 'text-zinc-100' : ''}
+                  `}>
                     {log.msg}
                   </span>
                 </div>

@@ -5,10 +5,7 @@ import KPICard from "@/components/KPICard";
 import MetricsCard from "@/components/MetricsCard";
 import AdvancedChartCard from "@/components/AdvancedChartCard";
 import LoadingScreen from "@/components/LoadingScreen";
-import {
-  LineChart, Line, BarChart, Bar, AreaChart, Area, ComposedChart,
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
-} from "recharts";
+import ReactECharts from 'echarts-for-react';
 
 // --- Data Transformation Helpers for Advanced Metrics --- // 
 
@@ -102,6 +99,302 @@ const PatientDashboard = () => {
   const entropyData = useMemo(() => transformEntropyData(data.advanced.demographic_entropy), [data.advanced.demographic_entropy]);
   const wealthData = useMemo(() => transformWealthData(data.advanced.wealth_trajectory), [data.advanced.wealth_trajectory]);
   const mortalityData = useMemo(() => transformMortalityData(data.advanced.mortality_hazard_by_quintiles), [data.advanced.mortality_hazard_by_quintiles]);
+
+  const survivalOption = useMemo(() => ({
+    tooltip: {
+      trigger: 'axis',
+      backgroundColor: 'rgba(255, 255, 255, 0.95)',
+      borderRadius: 12,
+      borderWidth: 0,
+      shadowColor: 'rgba(0, 0, 0, 0.05)',
+      shadowBlur: 10,
+      textStyle: { color: '#334155', fontFamily: 'Inter, sans-serif', fontSize: 11 }
+    },
+    legend: {
+      data: ['Male', 'Female'],
+      icon: 'circle',
+      bottom: 0,
+      textStyle: { color: '#64748b', fontWeight: 'bold' }
+    },
+    grid: { left: '3%', right: '3%', bottom: '12%', top: '8%', containLabel: true },
+    xAxis: {
+      type: 'category',
+      boundaryGap: false,
+      data: survivalData.map(d => d.name),
+      axisLine: { show: false },
+      axisTick: { show: false },
+      axisLabel: { color: '#94a3b8', fontSize: 10 }
+    },
+    yAxis: {
+      type: 'value',
+      axisLine: { show: false },
+      axisTick: { show: false },
+      axisLabel: { color: '#94a3b8', fontSize: 10, formatter: '{value}%' },
+      splitLine: { lineStyle: { type: 'dashed', color: '#f1f5f9' } }
+    },
+    series: [
+      {
+        name: 'Male',
+        type: 'line',
+        smooth: true,
+        showSymbol: false,
+        data: survivalData.map(d => d.Male),
+        itemStyle: { color: '#3b82f6' },
+        lineStyle: { width: 3 },
+        areaStyle: {
+          color: {
+            type: 'linear',
+            x: 0, y: 0, x2: 0, y2: 1,
+            colorStops: [
+              { offset: 0, color: 'rgba(59, 130, 246, 0.1)' },
+              { offset: 1, color: 'rgba(59, 130, 246, 0)' }
+            ]
+          }
+        }
+      },
+      {
+        name: 'Female',
+        type: 'line',
+        smooth: true,
+        showSymbol: false,
+        data: survivalData.map(d => d.Female),
+        itemStyle: { color: '#ec4899' },
+        lineStyle: { width: 3 },
+        areaStyle: {
+          color: {
+            type: 'linear',
+            x: 0, y: 0, x2: 0, y2: 1,
+            colorStops: [
+              { offset: 0, color: 'rgba(236, 72, 153, 0.1)' },
+              { offset: 1, color: 'rgba(236, 72, 153, 0)' }
+            ]
+          }
+        }
+      }
+    ]
+  }), [survivalData]);
+
+  const entropyOption = useMemo(() => ({
+    tooltip: {
+      trigger: 'axis',
+      backgroundColor: 'rgba(255, 255, 255, 0.95)',
+      borderRadius: 12,
+      borderWidth: 0,
+      shadowColor: 'rgba(0, 0, 0, 0.05)',
+      shadowBlur: 10,
+      textStyle: { color: '#334155', fontFamily: 'Inter, sans-serif', fontSize: 11 }
+    },
+    grid: { left: '3%', right: '4%', bottom: '5%', top: '5%', containLabel: true },
+    xAxis: {
+      type: 'value',
+      axisLine: { show: false },
+      axisTick: { show: false },
+      axisLabel: { color: '#94a3b8', fontSize: 10 },
+      splitLine: { lineStyle: { type: 'dashed', color: '#f1f5f9' } }
+    },
+    yAxis: {
+      type: 'category',
+      data: entropyData.map(d => d.name),
+      axisLine: { show: false },
+      axisTick: { show: false },
+      axisLabel: { color: '#64748b', fontSize: 11, fontWeight: 'bold' }
+    },
+    series: [
+      {
+        name: 'Entropy Score',
+        type: 'bar',
+        barWidth: 16,
+        data: entropyData.map(d => d.value),
+        itemStyle: {
+          borderRadius: [0, 4, 4, 0],
+          color: {
+            type: 'linear',
+            x: 0, y: 0, x2: 1, y2: 0,
+            colorStops: [
+              { offset: 0, color: '#8b5cf6' },
+              { offset: 1, color: '#c084fc' }
+            ]
+          }
+        }
+      }
+    ]
+  }), [entropyData]);
+
+  const wealthOption = useMemo(() => ({
+    tooltip: {
+      trigger: 'axis',
+      backgroundColor: 'rgba(255, 255, 255, 0.95)',
+      borderRadius: 12,
+      borderWidth: 0,
+      shadowColor: 'rgba(0, 0, 0, 0.05)',
+      shadowBlur: 10,
+      textStyle: { color: '#334155', fontFamily: 'Inter, sans-serif', fontSize: 11 }
+    },
+    legend: {
+      data: ['Income', 'Velocity'],
+      bottom: 0,
+      textStyle: { color: '#64748b', fontWeight: 'bold' }
+    },
+    grid: { left: '3%', right: '3%', bottom: '12%', top: '8%', containLabel: true },
+    xAxis: {
+      type: 'category',
+      data: wealthData.map(d => d.name),
+      axisLine: { show: false },
+      axisTick: { show: false },
+      axisLabel: { color: '#94a3b8', fontSize: 10 }
+    },
+    yAxis: [
+      {
+        type: 'value',
+        name: 'Income',
+        axisLine: { show: false },
+        axisTick: { show: false },
+        axisLabel: { color: '#14b8a6', fontSize: 10, formatter: '${value}' },
+        splitLine: { lineStyle: { type: 'dashed', color: '#f1f5f9' } }
+      },
+      {
+        type: 'value',
+        name: 'Velocity',
+        axisLine: { show: false },
+        axisTick: { show: false },
+        axisLabel: { color: '#f59e0b', fontSize: 10 },
+        splitLine: { show: false }
+      }
+    ],
+    series: [
+      {
+        name: 'Income',
+        type: 'line',
+        smooth: true,
+        showSymbol: false,
+        data: wealthData.map(d => d.Income),
+        itemStyle: { color: '#14b8a6' },
+        lineStyle: { width: 3 },
+        areaStyle: {
+          color: {
+            type: 'linear',
+            x: 0, y: 0, x2: 0, y2: 1,
+            colorStops: [
+              { offset: 0, color: 'rgba(20, 184, 166, 0.15)' },
+              { offset: 1, color: 'rgba(20, 184, 166, 0)' }
+            ]
+          }
+        }
+      },
+      {
+        name: 'Velocity',
+        type: 'line',
+        yAxisIndex: 1,
+        smooth: true,
+        data: wealthData.map(d => d.Velocity),
+        itemStyle: { color: '#f59e0b' },
+        lineStyle: { width: 3 },
+        symbol: 'circle',
+        symbolSize: 8
+      }
+    ]
+  }), [wealthData]);
+
+  const mortalityOption = useMemo(() => ({
+    tooltip: {
+      trigger: 'axis',
+      backgroundColor: 'rgba(255, 255, 255, 0.95)',
+      borderRadius: 12,
+      borderWidth: 0,
+      shadowColor: 'rgba(0, 0, 0, 0.05)',
+      shadowBlur: 10,
+      textStyle: { color: '#334155', fontFamily: 'Inter, sans-serif', fontSize: 11 }
+    },
+    legend: {
+      data: ['White', 'Black', 'Asian', 'Native'],
+      icon: 'circle',
+      bottom: 0,
+      textStyle: { color: '#64748b', fontWeight: 'bold' }
+    },
+    grid: { left: '3%', right: '3%', bottom: '12%', top: '8%', containLabel: true },
+    xAxis: {
+      type: 'category',
+      data: mortalityData.map(d => d.name),
+      axisLine: { show: false },
+      axisTick: { show: false },
+      axisLabel: { color: '#94a3b8', fontSize: 10 }
+    },
+    yAxis: {
+      type: 'value',
+      axisLine: { show: false },
+      axisTick: { show: false },
+      axisLabel: { color: '#94a3b8', fontSize: 10, formatter: '{value}%' },
+      splitLine: { lineStyle: { type: 'dashed', color: '#f1f5f9' } }
+    },
+    series: [
+      {
+        name: 'White',
+        type: 'bar',
+        stack: 'total',
+        barWidth: 26,
+        data: mortalityData.map(d => d.white),
+        itemStyle: {
+          color: {
+            type: 'linear',
+            x: 0, y: 0, x2: 0, y2: 1,
+            colorStops: [
+              { offset: 0, color: '#94a3b8' },
+              { offset: 1, color: '#cbd5e1' }
+            ]
+          }
+        }
+      },
+      {
+        name: 'Black',
+        type: 'bar',
+        stack: 'total',
+        data: mortalityData.map(d => d.black),
+        itemStyle: {
+          color: {
+            type: 'linear',
+            x: 0, y: 0, x2: 0, y2: 1,
+            colorStops: [
+              { offset: 0, color: '#0d9488' },
+              { offset: 1, color: '#2dd4bf' }
+            ]
+          }
+        }
+      },
+      {
+        name: 'Asian',
+        type: 'bar',
+        stack: 'total',
+        data: mortalityData.map(d => d.asian),
+        itemStyle: {
+          color: {
+            type: 'linear',
+            x: 0, y: 0, x2: 0, y2: 1,
+            colorStops: [
+              { offset: 0, color: '#0284c7' },
+              { offset: 1, color: '#38bdf8' }
+            ]
+          }
+        }
+      },
+      {
+        name: 'Native',
+        type: 'bar',
+        stack: 'total',
+        data: mortalityData.map(d => d.native),
+        itemStyle: {
+          borderRadius: [4, 4, 0, 0],
+          color: {
+            type: 'linear',
+            x: 0, y: 0, x2: 0, y2: 1,
+            colorStops: [
+              { offset: 0, color: '#6366f1' },
+              { offset: 1, color: '#818cf8' }
+            ]
+          }
+        }
+      }
+    ]
+  }), [mortalityData]);
 
   // 1. Map KPI Data (Injecting prevValues from new historical_data structure)
   // historical_data is grouped by period: { last_week: { total_patients: X, ... }, last_month: {...}, last_year: {...} }
@@ -268,27 +561,11 @@ const PatientDashboard = () => {
               icon={Activity}
               infoText="Probability of survival over time by gender, calculated using the Kaplan-Meier estimate on historical patient records."
             >
-              <AreaChart data={survivalData}>
-                <defs>
-                  <linearGradient id="colorMale" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.1} />
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                  </linearGradient>
-                  <linearGradient id="colorFemale" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#ec4899" stopOpacity={0.1} />
-                    <stop offset="95%" stopColor="#ec4899" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                <XAxis dataKey="name" fontSize={10} axisLine={false} tickLine={false} tick={{ fill: '#94a3b8' }} dy={10} />
-                <YAxis fontSize={10} axisLine={false} tickLine={false} tick={{ fill: '#94a3b8' }} unit="%" />
-                <Tooltip
-                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
-                />
-                <Legend iconType="circle" />
-                <Area type="monotone" dataKey="Male" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorMale)" />
-                <Area type="monotone" dataKey="Female" stroke="#ec4899" strokeWidth={3} fillOpacity={1} fill="url(#colorFemale)" />
-              </AreaChart>
+              <ReactECharts
+                option={survivalOption}
+                style={{ height: '300px', width: '100%' }}
+                opts={{ renderer: 'svg' }}
+              />
             </AdvancedChartCard>
 
             {/* 2. Demographic Entropy */}
@@ -298,19 +575,11 @@ const PatientDashboard = () => {
               icon={Users}
               infoText="Measure of racial and ethnic diversity within specific geographic regions, using the Shannon Entropy Index."
             >
-              <BarChart data={entropyData} layout="vertical" margin={{ left: 20 }} barSize={24}>
-                <defs>
-                  <linearGradient id="gradEntropy" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stopColor="#8b5cf6" stopOpacity={1} />
-                    <stop offset="100%" stopColor="#c084fc" stopOpacity={1} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
-                <XAxis type="number" fontSize={10} axisLine={false} tickLine={false} tick={{ fill: '#94a3b8' }} />
-                <YAxis dataKey="name" type="category" width={100} fontSize={11} tickLine={false} tick={{ fontSize: 11, fontWeight: 600, fill: '#64748b' }} />
-                <Tooltip cursor={{ fill: 'rgba(241, 245, 249, 0.5)' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
-                <Bar dataKey="value" fill="url(#gradEntropy)" radius={[0, 4, 4, 0]} />
-              </BarChart>
+              <ReactECharts
+                option={entropyOption}
+                style={{ height: '300px', width: '100%' }}
+                opts={{ renderer: 'svg' }}
+              />
             </AdvancedChartCard>
 
             {/* 3. Wealth Trajectory */}
@@ -320,22 +589,11 @@ const PatientDashboard = () => {
               icon={DollarSign}
               infoText="Correlation between age groups and average household income, showing the rate of wealth accumulation over a lifetime."
             >
-              <ComposedChart data={wealthData}>
-                <defs>
-                  <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#14b8a6" stopOpacity={0.2} />
-                    <stop offset="95%" stopColor="#14b8a6" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid stroke="#f1f5f9" vertical={false} />
-                <XAxis dataKey="name" fontSize={10} axisLine={false} tickLine={false} tick={{ fill: '#94a3b8' }} dy={10} />
-                <YAxis yAxisId="left" fontSize={10} axisLine={false} tickLine={false} tick={{ fill: '#14b8a6' }} tickFormatter={(value) => `$${value}`} />
-                <YAxis yAxisId="right" orientation="right" fontSize={10} axisLine={false} tickLine={false} tick={{ fill: '#f59e0b' }} />
-                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none' }} />
-                <Legend />
-                <Area yAxisId="left" type="monotone" dataKey="Income" fill="url(#colorIncome)" stroke="#14b8a6" strokeWidth={3} />
-                <Line yAxisId="right" type="monotone" dataKey="Velocity" stroke="#f59e0b" strokeWidth={3} dot={{ r: 4, strokeWidth: 2, fill: '#fff' }} />
-              </ComposedChart>
+              <ReactECharts
+                option={wealthOption}
+                style={{ height: '300px', width: '100%' }}
+                opts={{ renderer: 'svg' }}
+              />
             </AdvancedChartCard>
 
             {/* 4. Mortality Hazard */}
@@ -345,38 +603,11 @@ const PatientDashboard = () => {
               icon={Scale}
               infoText="Probability of mortality categorized by income quintiles and racial demographics, highlighting socioeconomic health disparities."
             >
-              <BarChart data={mortalityData} barGap={0} barSize={32}>
-                <defs>
-                  <linearGradient id="gradWhite" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#94a3b8" stopOpacity={1} />
-                    <stop offset="100%" stopColor="#cbd5e1" stopOpacity={1} />
-                  </linearGradient>
-                  <linearGradient id="gradBlack" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#0d9488" stopOpacity={1} />
-                    <stop offset="100%" stopColor="#2dd4bf" stopOpacity={1} />
-                  </linearGradient>
-                  <linearGradient id="gradAsian" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#0284c7" stopOpacity={1} />
-                    <stop offset="100%" stopColor="#38bdf8" stopOpacity={1} />
-                  </linearGradient>
-                  <linearGradient id="gradNative" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#6366f1" stopOpacity={1} />
-                    <stop offset="100%" stopColor="#818cf8" stopOpacity={1} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                <XAxis dataKey="name" fontSize={10} axisLine={false} tickLine={false} tick={{ fill: '#94a3b8' }} dy={10} />
-                <YAxis fontSize={10} axisLine={false} tickLine={false} tick={{ fill: '#94a3b8' }} unit="%" />
-                <Tooltip
-                  cursor={{ fill: 'rgba(241, 245, 249, 0.5)' }}
-                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' }}
-                />
-                <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px' }} />
-                <Bar dataKey="white" name="White" stackId="a" fill="url(#gradWhite)" radius={[0, 0, 4, 4]} />
-                <Bar dataKey="black" name="Black" stackId="a" fill="url(#gradBlack)" radius={[0, 0, 0, 0]} />
-                <Bar dataKey="asian" name="Asian" stackId="a" fill="url(#gradAsian)" radius={[0, 0, 0, 0]} />
-                <Bar dataKey="native" name="Native" stackId="a" fill="url(#gradNative)" radius={[4, 4, 0, 0]} />
-              </BarChart>
+              <ReactECharts
+                option={mortalityOption}
+                style={{ height: '300px', width: '100%' }}
+                opts={{ renderer: 'svg' }}
+              />
             </AdvancedChartCard>
 
           </div>

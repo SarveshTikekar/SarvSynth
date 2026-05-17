@@ -1,9 +1,6 @@
 import React, { useMemo } from "react";
-import {
-  AreaChart, Area, BarChart, Bar,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
-} from "recharts";
-import { BarChart3, TrendingUp, History, Info } from "lucide-react";
+import ReactECharts from 'echarts-for-react';
+import { BarChart3, History, Info } from "lucide-react";
 
 const MetricsCard = ({ title, metrics, chartData, chartType = "line", infoText = "", children = null }) => {
 
@@ -22,6 +19,91 @@ const MetricsCard = ({ title, metrics, chartData, chartType = "line", infoText =
       return { name: year, value: item[year] };
     }).reverse();
   }, [chartData]); 
+
+  // ECharts options memoized
+  const chartOption = useMemo(() => {
+    if (formattedData.length === 0) return {};
+
+    const baseOption = {
+      tooltip: {
+        trigger: 'axis',
+        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        borderRadius: 12,
+        borderWidth: 0,
+        shadowColor: 'rgba(0, 0, 0, 0.05)',
+        shadowBlur: 10,
+        textStyle: { color: '#334155', fontFamily: 'Inter, sans-serif', fontSize: 11 }
+      },
+      grid: {
+        left: '2%',
+        right: '2%',
+        bottom: '2%',
+        top: '10%',
+        containLabel: true
+      },
+      xAxis: {
+        type: 'category',
+        data: formattedData.map(d => d.name),
+        axisLine: { show: false },
+        axisTick: { show: false },
+        axisLabel: { color: '#94a3b8', fontSize: 11, fontWeight: 'bold' }
+      },
+      yAxis: {
+        type: 'value',
+        axisLine: { show: false },
+        axisTick: { show: false },
+        axisLabel: { color: '#94a3b8', fontSize: 11, fontWeight: 'bold' },
+        splitLine: { lineStyle: { type: 'dashed', color: '#f1f5f9' } }
+      }
+    };
+
+    if (chartType === "line") {
+      return {
+        ...baseOption,
+        xAxis: {
+          ...baseOption.xAxis,
+          boundaryGap: false
+        },
+        series: [
+          {
+            name: 'Value',
+            type: 'line',
+            smooth: true,
+            showSymbol: false,
+            data: formattedData.map(d => d.value),
+            itemStyle: { color: '#14b8a6' },
+            lineStyle: { width: 3.5 },
+            areaStyle: {
+              color: {
+                type: 'linear',
+                x: 0, y: 0, x2: 0, y2: 1,
+                colorStops: [
+                  { offset: 0, color: 'rgba(20, 184, 166, 0.15)' },
+                  { offset: 1, color: 'rgba(20, 184, 166, 0)' }
+                ]
+              }
+            }
+          }
+        ]
+      };
+    } else {
+      return {
+        ...baseOption,
+        series: [
+          {
+            name: 'Value',
+            type: 'bar',
+            barWidth: '35%',
+            data: formattedData.map(d => d.value),
+            itemStyle: {
+              color: '#14b8a6',
+              borderRadius: [6, 6, 0, 0]
+            }
+          }
+        ]
+      };
+    }
+  }, [formattedData, chartType]);
 
   return (
     <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm mb-8 flex flex-col h-full overflow-hidden relative">
@@ -61,63 +143,18 @@ const MetricsCard = ({ title, metrics, chartData, chartType = "line", infoText =
       <div className="w-full p-6 relative flex-1 flex flex-col min-h-0">
         <div className="flex-1 w-full min-h-[300px]">
           {children ? children : (
-            <ResponsiveContainer width="100%" height="100%">
-              {formattedData.length > 0 ? (
-                chartType === "line" ? (
-                  <AreaChart data={formattedData}>
-                    <defs>
-                      <linearGradient id="colorMetric" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#14b8a6" stopOpacity={0.2} />
-                        <stop offset="95%" stopColor="#14b8a6" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="0" vertical={false} stroke="#f1f5f9" />
-                    <XAxis
-                      dataKey="name"
-                      fontSize={11}
-                      fontWeight={700}
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fill: '#94a3b8' }}
-                      dy={10}
-                    />
-                    <YAxis
-                      fontSize={11}
-                      fontWeight={700}
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fill: '#94a3b8' }}
-                    />
-                    <Tooltip
-                      contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
-                      cursor={{ stroke: '#14b8a6', strokeWidth: 2, strokeDasharray: '4 4' }}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="value"
-                      stroke="#14b8a6"
-                      strokeWidth={4}
-                      fillOpacity={1}
-                      fill="url(#colorMetric)"
-                      animationDuration={1500}
-                    />
-                  </AreaChart>
-                ) : (
-                  <BarChart data={formattedData}>
-                    <CartesianGrid strokeDasharray="0" vertical={false} stroke="#f1f5f9" />
-                    <XAxis dataKey="name" fontSize={11} fontWeight={700} axisLine={false} tickLine={false} tick={{ fill: '#94a3b8' }} dy={10} />
-                    <YAxis fontSize={11} fontWeight={700} axisLine={false} tickLine={false} tick={{ fill: '#94a3b8' }} />
-                    <Tooltip cursor={{ fill: 'rgba(20, 184, 166, 0.05)' }} />
-                    <Bar dataKey="value" fill="#14b8a6" radius={[6, 6, 0, 0]} barSize={40} animationDuration={1500} />
-                  </BarChart>
-                )
-              ) : (
-                <div className="flex flex-col items-center justify-center h-full text-slate-400 gap-2">
-                  <History size={32} className="opacity-20" />
-                  <p className="text-sm font-medium">No trend data available</p>
-                </div>
-              )}
-            </ResponsiveContainer>
+            formattedData.length > 0 ? (
+              <ReactECharts
+                option={chartOption}
+                style={{ height: '300px', width: '100%' }}
+                opts={{ renderer: 'svg' }}
+              />
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full text-slate-400 gap-2">
+                <History size={32} className="opacity-20" />
+                <p className="text-sm font-medium">No trend data available</p>
+              </div>
+            )
           )}
         </div>
       </div>

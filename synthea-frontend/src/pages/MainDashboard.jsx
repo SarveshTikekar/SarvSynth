@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { patientDashboard, conditionsDashboard, encountersDashboard } from "@/api/api";
 import { Users, Activity, Clock as ClockIcon, ShieldCheck, TrendingUp, AlertCircle, HeartPulse, Database, Stethoscope, Banknote, Shield, Wallet, BarChart3 } from 'lucide-react';
 import KPICard from "@/components/KPICard";
 import { Link } from 'react-router-dom';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts';
+import ReactECharts from 'echarts-for-react';
 import LoadingScreen from "@/components/LoadingScreen";
 
 const MainDashboard = () => {
@@ -201,17 +201,44 @@ const MainDashboard = () => {
                         </div>
                         {/* Tiny Sparkline Area Chart */}
                         <div className="h-24 w-full">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart data={systemHealthData}>
-                                    <defs>
-                                        <linearGradient id="colorEfficiency" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-                                            <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
-                                        </linearGradient>
-                                    </defs>
-                                    <Area type="monotone" dataKey="efficiency" stroke="#10b981" strokeWidth={2} fill="url(#colorEfficiency)" />
-                                </AreaChart>
-                            </ResponsiveContainer>
+                            <ReactECharts
+                                option={{
+                                    tooltip: { show: false },
+                                    grid: { left: 0, right: 0, top: 5, bottom: 5 },
+                                    xAxis: {
+                                        type: 'category',
+                                        data: systemHealthData.map(d => d.name),
+                                        show: false
+                                    },
+                                    yAxis: {
+                                        type: 'value',
+                                        show: false
+                                    },
+                                    series: [
+                                        {
+                                            name: 'Efficiency',
+                                            type: 'line',
+                                            smooth: true,
+                                            showSymbol: false,
+                                            data: systemHealthData.map(d => d.efficiency),
+                                            itemStyle: { color: '#10b981' },
+                                            lineStyle: { width: 2 },
+                                            areaStyle: {
+                                                color: {
+                                                    type: 'linear',
+                                                    x: 0, y: 0, x2: 0, y2: 1,
+                                                    colorStops: [
+                                                        { offset: 0, color: 'rgba(16, 185, 129, 0.25)' },
+                                                        { offset: 1, color: 'rgba(16, 185, 129, 0)' }
+                                                    ]
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }}
+                                style={{ height: '100%', width: '100%' }}
+                                opts={{ renderer: 'svg' }}
+                            />
                         </div>
                         <div className="flex gap-2 mt-2">
                             <div className="text-xs font-bold text-slate-400 bg-slate-50 px-2 py-1 rounded">ETL: Idle</div>
@@ -251,19 +278,49 @@ const MainDashboard = () => {
                             <BarChart3 className="text-purple-500" size={20} /> Throughput Metrics
                         </h3>
                         <div className="h-40 w-full">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={[{ name: 'Admit', val: 80 }, { name: 'Treat', val: 65 }, { name: 'Discharge', val: 90 }, { name: 'Bill', val: 100 }]}>
-                                    <Bar dataKey="val" radius={[4, 4, 0, 0]}>
+                            <ReactECharts
+                                option={{
+                                    tooltip: {
+                                        trigger: 'axis',
+                                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                                        borderRadius: 12,
+                                        borderWidth: 0,
+                                        shadowColor: 'rgba(0, 0, 0, 0.05)',
+                                        shadowBlur: 10,
+                                        textStyle: { color: '#334155', fontFamily: 'Inter, sans-serif', fontSize: 11 }
+                                    },
+                                    grid: { left: '3%', right: '3%', bottom: '5%', top: '10%', containLabel: true },
+                                    xAxis: {
+                                        type: 'category',
+                                        data: ['Admit', 'Treat', 'Discharge', 'Bill'],
+                                        axisLine: { show: false },
+                                        axisTick: { show: false },
+                                        axisLabel: { color: '#64748b', fontSize: 11, fontWeight: 'bold' }
+                                    },
+                                    yAxis: {
+                                        type: 'value',
+                                        axisLine: { show: false },
+                                        axisTick: { show: false },
+                                        axisLabel: { color: '#94a3b8', fontSize: 11 },
+                                        splitLine: { lineStyle: { type: 'dashed', color: '#f1f5f9' } }
+                                    },
+                                    series: [
                                         {
-                                            [0, 1, 2, 3].map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b'][index]} />
-                                            ))
+                                            name: 'Throughput',
+                                            type: 'bar',
+                                            barWidth: '40%',
+                                            data: [
+                                                { value: 80, itemStyle: { color: '#3b82f6', borderRadius: [4, 4, 0, 0] } },
+                                                { value: 65, itemStyle: { color: '#8b5cf6', borderRadius: [4, 4, 0, 0] } },
+                                                { value: 90, itemStyle: { color: '#10b981', borderRadius: [4, 4, 0, 0] } },
+                                                { value: 100, itemStyle: { color: '#f59e0b', borderRadius: [4, 4, 0, 0] } }
+                                            ]
                                         }
-                                    </Bar>
-                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
-                                    <Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ borderRadius: '8px' }} />
-                                </BarChart>
-                            </ResponsiveContainer>
+                                    ]
+                                }}
+                                style={{ height: '100%', width: '100%' }}
+                                opts={{ renderer: 'svg' }}
+                            />
                         </div>
                     </div>
                 </div>

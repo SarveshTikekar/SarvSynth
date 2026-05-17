@@ -8,11 +8,7 @@ import KPICard from "@/components/KPICard";
 import MetricsCard from "@/components/MetricsCard";
 import AdvancedChartCard from "@/components/AdvancedChartCard";
 import LoadingScreen from "@/components/LoadingScreen";
-import {
-	BarChart, Bar, PieChart, Pie, Cell,
-	XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-	LineChart, Line
-} from "recharts";
+import ReactECharts from 'echarts-for-react';
 
 // --- Colors & Gradients ---
 const COLORS = {
@@ -138,6 +134,230 @@ const ConditionsDashboard = () => {
 			value: item[2]
 		})).sort((a, b) => b.value - a.value);
 	}, [data]);
+
+	const getHorizontalBarOption = (dataList, colorHex, seriesName = "Value") => {
+		const reversedData = [...dataList].reverse();
+		return {
+			tooltip: {
+				trigger: 'axis',
+				backgroundColor: 'rgba(255, 255, 255, 0.95)',
+				borderRadius: 12,
+				borderWidth: 0,
+				shadowColor: 'rgba(0, 0, 0, 0.05)',
+				shadowBlur: 10,
+				textStyle: { color: '#334155', fontFamily: 'Inter, sans-serif', fontSize: 11 }
+			},
+			grid: { left: '1%', right: '5%', bottom: '2%', top: '2%', containLabel: true },
+			xAxis: {
+				type: 'value',
+				show: false
+			},
+			yAxis: {
+				type: 'category',
+				data: reversedData.map(d => d.name),
+				axisLine: { show: false },
+				axisTick: { show: false },
+				axisLabel: { color: '#64748b', fontSize: 10, fontWeight: 'bold', width: 180, overflow: 'truncate', interval: 0 }
+			},
+			series: [
+				{
+					name: seriesName,
+					type: 'bar',
+					barWidth: 10,
+					data: reversedData.map(d => d.value),
+					itemStyle: { color: colorHex, borderRadius: [0, 4, 4, 0] }
+				}
+			]
+		};
+	};
+
+	const clinicalCourseOption = useMemo(() => ({
+		tooltip: {
+			trigger: 'item',
+			backgroundColor: 'rgba(255, 255, 255, 0.95)',
+			borderRadius: 12,
+			borderWidth: 0,
+			shadowColor: 'rgba(0, 0, 0, 0.05)',
+			shadowBlur: 10,
+			textStyle: { color: '#334155', fontFamily: 'Inter, sans-serif', fontSize: 11 }
+		},
+		legend: {
+			orient: 'horizontal',
+			bottom: 0,
+			icon: 'circle',
+			textStyle: { color: '#64748b', fontWeight: 'bold' }
+		},
+		series: [
+			{
+				name: 'Clinical Course',
+				type: 'pie',
+				radius: ['50%', '70%'],
+				avoidLabelOverlap: false,
+				itemStyle: {
+					borderRadius: 6,
+					borderColor: '#fff',
+					borderWidth: 2
+				},
+				label: { show: false },
+				emphasis: {
+					label: { show: false }
+				},
+				labelLine: { show: false },
+				data: chronicVsAcute.map((d, index) => ({
+					value: d.value,
+					name: d.name,
+					itemStyle: { color: PIE_COLORS[index % 5] }
+				}))
+			}
+		]
+	}), [chronicVsAcute]);
+
+	const comorbidityDistributionOption = useMemo(() => ({
+		tooltip: {
+			trigger: 'axis',
+			backgroundColor: 'rgba(255, 255, 255, 0.95)',
+			borderRadius: 12,
+			borderWidth: 0,
+			shadowColor: 'rgba(0, 0, 0, 0.05)',
+			shadowBlur: 10,
+			textStyle: { color: '#334155', fontFamily: 'Inter, sans-serif', fontSize: 11 }
+		},
+		grid: { left: '3%', right: '3%', bottom: '5%', top: '10%', containLabel: true },
+		xAxis: {
+			type: 'category',
+			data: comorbidityDistribution.map(d => d.name),
+			axisLine: { show: false },
+			axisTick: { show: false },
+			axisLabel: { color: '#94a3b8', fontSize: 10 }
+		},
+		yAxis: {
+			type: 'value',
+			axisLine: { show: false },
+			axisTick: { show: false },
+			axisLabel: { color: '#94a3b8', fontSize: 10 },
+			splitLine: { lineStyle: { type: 'dashed', color: '#f1f5f9' } }
+		},
+		series: [
+			{
+				name: 'Frequency',
+				type: 'bar',
+				barWidth: '40%',
+				data: comorbidityDistribution.map(d => d.value),
+				itemStyle: { color: '#6366f1', borderRadius: [4, 4, 0, 0] }
+			}
+		]
+	}), [comorbidityDistribution]);
+
+	const incidenceVelocityOption = useMemo(() => {
+		if (!incidenceData.chartData || incidenceData.chartData.length === 0) return {};
+		return {
+			tooltip: {
+				trigger: 'axis',
+				backgroundColor: 'rgba(255, 255, 255, 0.95)',
+				borderRadius: 12,
+				borderWidth: 0,
+				shadowColor: 'rgba(0, 0, 0, 0.05)',
+				shadowBlur: 10,
+				textStyle: { color: '#334155', fontFamily: 'Inter, sans-serif', fontSize: 11 }
+			},
+			grid: { left: '3%', right: '3%', bottom: '5%', top: '10%', containLabel: true },
+			xAxis: {
+				type: 'category',
+				data: incidenceData.chartData.map(d => d.month),
+				axisLine: { show: false },
+				axisTick: { show: false },
+				axisLabel: { color: '#94a3b8', fontSize: 10 }
+			},
+			yAxis: {
+				type: 'value',
+				axisLine: { show: false },
+				axisTick: { show: false },
+				axisLabel: { color: '#94a3b8', fontSize: 10 },
+				splitLine: { lineStyle: { type: 'dashed', color: '#f1f5f9' } }
+			},
+			series: [
+				{
+					name: 'Incidence',
+					type: 'line',
+					smooth: true,
+					data: incidenceData.chartData.map(d => d.value),
+					itemStyle: { color: '#14b8a6' },
+					lineStyle: { width: 3 },
+					symbol: 'circle',
+					symbolSize: 8
+				}
+			]
+		};
+	}, [incidenceData.chartData]);
+
+	const recurrenceGapOption = useMemo(() => {
+		const reversedData = [...recurrenceGapData].reverse();
+		return {
+			tooltip: {
+				trigger: 'axis',
+				backgroundColor: 'rgba(255, 255, 255, 0.95)',
+				borderRadius: 12,
+				borderWidth: 0,
+				shadowColor: 'rgba(0, 0, 0, 0.05)',
+				shadowBlur: 10,
+				textStyle: { color: '#334155', fontFamily: 'Inter, sans-serif', fontSize: 11 }
+			},
+			grid: { left: '1%', right: '5%', bottom: '2%', top: '2%', containLabel: true },
+			xAxis: { type: 'value', show: false },
+			yAxis: {
+				type: 'category',
+				data: reversedData.map(d => d.name),
+				axisLine: { show: false },
+				axisTick: { show: false },
+				axisLabel: { color: '#64748b', fontSize: 10, fontWeight: 'bold' }
+			},
+			series: [
+				{
+					name: 'Days',
+					type: 'bar',
+					barWidth: 10,
+					data: reversedData.map(d => d.value),
+					itemStyle: { color: '#8b5cf6', borderRadius: [0, 4, 4, 0] }
+				}
+			]
+		};
+	}, [recurrenceGapData]);
+
+	const ageBurdenOption = useMemo(() => ({
+		tooltip: {
+			trigger: 'axis',
+			backgroundColor: 'rgba(255, 255, 255, 0.95)',
+			borderRadius: 12,
+			borderWidth: 0,
+			shadowColor: 'rgba(0, 0, 0, 0.05)',
+			shadowBlur: 10,
+			textStyle: { color: '#334155', fontFamily: 'Inter, sans-serif', fontSize: 11 }
+		},
+		grid: { left: '3%', right: '3%', bottom: '5%', top: '10%', containLabel: true },
+		xAxis: {
+			type: 'category',
+			data: ageBurden.map(d => d.name),
+			axisLine: { show: false },
+			axisTick: { show: false },
+			axisLabel: { color: '#94a3b8', fontSize: 10 }
+		},
+		yAxis: {
+			type: 'value',
+			axisLine: { show: false },
+			axisTick: { show: false },
+			axisLabel: { color: '#94a3b8', fontSize: 10 },
+			splitLine: { lineStyle: { type: 'dashed', color: '#f1f5f9' } }
+		},
+		series: [
+			{
+				name: 'Burden',
+				type: 'bar',
+				barWidth: '40%',
+				data: ageBurden.map(d => d.value),
+				itemStyle: { color: '#f43f5e', borderRadius: [4, 4, 0, 0] }
+			}
+		]
+	}), [ageBurden]);
 
 	// Advanced 4: Network Graph (Randomized)
 	const networkGraph = useMemo(() => {
@@ -273,77 +493,53 @@ const ConditionsDashboard = () => {
 				<div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 					{/* Row 1 */}
 					<MetricsCard title="Top 10 Active Disorders" metrics={[]} chartData={topDisorders} chartType="bar">
-						<ResponsiveContainer width="100%" height="100%" minHeight={450}>
-							<BarChart layout="vertical" data={topDisorders} margin={{ left: 10, right: 30, top: 10, bottom: 10 }}>
-								<CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#f1f5f9" />
-								<XAxis type="number" hide />
-								<YAxis dataKey="name" type="category" width={180} tick={{ fontSize: 10, fontWeight: 600, fill: '#64748b' }} tickLine={false} axisLine={false} interval={0} />
-								<Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ borderRadius: '12px', border: 'none' }} />
-								<Bar dataKey="value" fill="#14b8a6" radius={[0, 4, 4, 0]} barSize={18} />
-							</BarChart>
-						</ResponsiveContainer>
+						<ReactECharts
+							option={getHorizontalBarOption(topDisorders, '#14b8a6', 'Active Cases')}
+							style={{ height: '450px', width: '100%' }}
+							opts={{ renderer: 'svg' }}
+						/>
 					</MetricsCard>
 
 					<MetricsCard title="Top 10 Recurring" metrics={[]} chartData={recurring} chartType="bar">
-						<ResponsiveContainer width="100%" height="100%" minHeight={450}>
-							<BarChart layout="vertical" data={recurring} margin={{ left: 10, right: 30, top: 10, bottom: 10 }}>
-								<CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#f1f5f9" />
-								<XAxis type="number" hide />
-								<YAxis dataKey="name" type="category" width={180} tick={{ fontSize: 10, fontWeight: 600, fill: '#64748b' }} tickLine={false} axisLine={false} interval={0} />
-								<Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ borderRadius: '12px', border: 'none' }} />
-								<Bar dataKey="value" fill="#f43f5e" radius={[0, 4, 4, 0]} barSize={18} />
-							</BarChart>
-						</ResponsiveContainer>
+						<ReactECharts
+							option={getHorizontalBarOption(recurring, '#f43f5e', 'Relapses')}
+							style={{ height: '450px', width: '100%' }}
+							opts={{ renderer: 'svg' }}
+						/>
 					</MetricsCard>
 
 					{/* Row 2 */}
 					<MetricsCard title="Clinical Gravity (Severity)" metrics={[]} chartData={clinicalGravity} chartType="bar">
-						<ResponsiveContainer width="100%" height="100%" minHeight={450}>
-							<BarChart layout="vertical" data={clinicalGravity} margin={{ left: 10, right: 30, top: 10, bottom: 10 }}>
-								<CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#f1f5f9" />
-								<XAxis type="number" hide />
-								<YAxis dataKey="name" type="category" width={180} tick={{ fontSize: 10, fontWeight: 600, fill: '#64748b' }} tickLine={false} axisLine={false} interval={0} />
-								<Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ borderRadius: '12px', border: 'none' }} />
-								<Bar dataKey="value" fill="#8b5cf6" radius={[0, 4, 4, 0]} barSize={18} />
-							</BarChart>
-						</ResponsiveContainer>
+						<ReactECharts
+							option={getHorizontalBarOption(clinicalGravity, '#8b5cf6', 'Gravity Score')}
+							style={{ height: '450px', width: '100%' }}
+							opts={{ renderer: 'svg' }}
+						/>
 					</MetricsCard>
 
 					<MetricsCard title="Treatment Efficiency (Avg Cure Time)" metrics={[]} chartData={resolutionEfficiency} chartType="bar">
-						<ResponsiveContainer width="100%" height="100%" minHeight={450}>
-							<BarChart layout="vertical" data={resolutionEfficiency} margin={{ left: 10, right: 30, top: 10, bottom: 10 }}>
-								<CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#f1f5f9" />
-								<XAxis type="number" hide />
-								<YAxis dataKey="name" type="category" width={180} tick={{ fontSize: 10, fontWeight: 600, fill: '#64748b' }} tickLine={false} axisLine={false} interval={0} />
-								<Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ borderRadius: '12px', border: 'none' }} />
-								<Bar dataKey="value" fill="#d97706" radius={[0, 4, 4, 0]} barSize={18} name="Avg Days to Cure" />
-							</BarChart>
-						</ResponsiveContainer>
+						<ReactECharts
+							option={getHorizontalBarOption(resolutionEfficiency, '#d97706', 'Avg Days to Cure')}
+							style={{ height: '450px', width: '100%' }}
+							opts={{ renderer: 'svg' }}
+						/>
 					</MetricsCard>
 
 					{/* Row 3 */}
 					<MetricsCard title="Clinical Course" metrics={[{ label: "Total", value: chronicVsAcute.reduce((a, c) => a + c.value, 0) }]} chartData={chronicVsAcute} chartType="pie">
-						<ResponsiveContainer width="100%" height="100%" minHeight={300}>
-							<PieChart>
-								<Pie data={chronicVsAcute} cx="50%" cy="50%" innerRadius={70} outerRadius={90} paddingAngle={5} dataKey="value">
-									{chronicVsAcute.map((entry, index) => <Cell key={`cell-${index}`} fill={PIE_COLORS[index % 5]} />)}
-								</Pie>
-								<Legend verticalAlign="bottom" height={36} iconType="circle" />
-								<Tooltip contentStyle={{ borderRadius: '12px', border: 'none' }} />
-							</PieChart>
-						</ResponsiveContainer>
+						<ReactECharts
+							option={clinicalCourseOption}
+							style={{ height: '300px', width: '100%' }}
+							opts={{ renderer: 'svg' }}
+						/>
 					</MetricsCard>
 
 					<MetricsCard title="Comorbidity Distribution" metrics={[]} chartData={comorbidityDistribution} chartType="bar">
-						<ResponsiveContainer width="100%" height="100%" minHeight={300}>
-							<BarChart data={comorbidityDistribution}>
-								<CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-								<XAxis dataKey="name" tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-								<YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-								<Tooltip cursor={{ fill: '#f8fafc' }} contentStyle={{ borderRadius: '12px', border: 'none' }} />
-								<Bar dataKey="value" fill="#6366f1" radius={[4, 4, 0, 0]} barSize={40} />
-							</BarChart>
-						</ResponsiveContainer>
+						<ReactECharts
+							option={comorbidityDistributionOption}
+							style={{ height: '300px', width: '100%' }}
+							opts={{ renderer: 'svg' }}
+						/>
 					</MetricsCard>
 				</div>
 
@@ -386,15 +582,11 @@ const ConditionsDashboard = () => {
 								</div>
 								<div className="col-span-2 h-[300px]">
 									{selectedIncidence && (
-										<ResponsiveContainer width="100%" height="100%">
-											<LineChart data={incidenceData.chartData}>
-												<CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-												<XAxis dataKey="month" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
-												<YAxis tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
-												<Tooltip contentStyle={{ borderRadius: '12px', border: 'none' }} />
-												<Line type="monotone" dataKey="value" stroke="#14b8a6" strokeWidth={3} dot={{ r: 4, fill: "#14b8a6" }} />
-											</LineChart>
-										</ResponsiveContainer>
+										<ReactECharts
+											option={incidenceVelocityOption}
+											style={{ height: '100%', width: '100%' }}
+											opts={{ renderer: 'svg' }}
+										/>
 									)}
 								</div>
 							</div>
@@ -402,15 +594,11 @@ const ConditionsDashboard = () => {
 
 						<AdvancedChartCard title="Recurrence Gap" subtitle="Relapse Interval" icon={ClockIcon}>
 							<div className="h-[300px] w-full">
-								<ResponsiveContainer width="100%" height="100%">
-									<BarChart data={recurrenceGapData} layout="vertical" margin={{ left: 40 }}>
-										<CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
-										<XAxis type="number" hide />
-										<YAxis dataKey="name" type="category" width={90} tick={{ fontSize: 10 }} axisLine={false} />
-										<Tooltip cursor={{ fill: '#f8fafc' }} contentStyle={{ borderRadius: '12px' }} />
-										<Bar dataKey="value" fill="#8b5cf6" radius={[0, 4, 4, 0]} barSize={20} />
-									</BarChart>
-								</ResponsiveContainer>
+								<ReactECharts
+									option={recurrenceGapOption}
+									style={{ height: '100%', width: '100%' }}
+									opts={{ renderer: 'svg' }}
+								/>
 							</div>
 						</AdvancedChartCard>
 					</div>
@@ -418,15 +606,11 @@ const ConditionsDashboard = () => {
 					{/* Row 2: Age Burden, Comorbidity Pairs */}
 					<div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
 						<MetricsCard title="Age-Based Disease Burden" metrics={[]} chartData={ageBurden} chartType="bar">
-							<ResponsiveContainer width="100%" height="100%" minHeight={300}>
-								<BarChart data={ageBurden}>
-									<CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-									<XAxis dataKey="name" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
-									<YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
-									<Tooltip cursor={{ fill: '#f8fafc' }} contentStyle={{ borderRadius: '12px' }} />
-									<Bar dataKey="value" fill="#f43f5e" radius={[4, 4, 0, 0]} barSize={40} />
-								</BarChart>
-							</ResponsiveContainer>
+							<ReactECharts
+								option={ageBurdenOption}
+								style={{ height: '300px', width: '100%' }}
+								opts={{ renderer: 'svg' }}
+							/>
 						</MetricsCard>
 
 						<div className="bg-white p-6 rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">

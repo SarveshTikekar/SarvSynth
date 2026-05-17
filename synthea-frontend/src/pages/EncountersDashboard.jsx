@@ -9,11 +9,6 @@ import KPICard from "@/components/KPICard";
 import MetricsCard from "@/components/MetricsCard";
 import AdvancedChartCard from "@/components/AdvancedChartCard";
 import LoadingScreen from "@/components/LoadingScreen";
-import {
-    BarChart, Bar, PieChart, Pie, Cell,
-    XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-    LineChart, Line, ScatterChart, Scatter, ZAxis, AreaChart, Area, ComposedChart
-} from "recharts";
 import ReactECharts from 'echarts-for-react';
 
 // --- Colors & Gradients ---
@@ -75,6 +70,321 @@ const EncountersDashboard = () => {
         let list = data.advanced_metrics.high_cost_anomaly_index || [];
         return list.sort((a, b) => b.value - a.value).slice(0, 10);
     }, [data])
+
+    const topCausesOption = useMemo(() => {
+        const reversedData = [...topCauses].reverse();
+        return {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: { type: 'shadow' },
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                borderRadius: 12,
+                borderWidth: 0,
+                shadowColor: 'rgba(0, 0, 0, 0.05)',
+                shadowBlur: 10,
+                textStyle: { color: '#334155', fontFamily: 'Inter, sans-serif', fontSize: 11 }
+            },
+            grid: { left: '3%', right: '8%', bottom: '3%', top: '3%', containLabel: true },
+            xAxis: { type: 'value', show: false },
+            yAxis: {
+                type: 'category',
+                data: reversedData.map(d => truncateLabel(d.name, 25)),
+                axisLine: { show: false },
+                axisTick: { show: false },
+                axisLabel: { color: '#64748b', fontSize: 10, fontWeight: 'bold', interval: 0 }
+            },
+            series: [
+                {
+                    name: 'Encounters',
+                    type: 'bar',
+                    barWidth: 12,
+                    data: reversedData.map(d => d.value),
+                    itemStyle: { color: '#f43f5e', borderRadius: [0, 4, 4, 0] }
+                }
+            ]
+        };
+    }, [topCauses]);
+
+    const feeDivergenceOption = useMemo(() => ({
+        tooltip: {
+            trigger: 'axis',
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            borderRadius: 12,
+            borderWidth: 0,
+            shadowColor: 'rgba(0, 0, 0, 0.05)',
+            shadowBlur: 10,
+            textStyle: { color: '#334155', fontFamily: 'Inter, sans-serif', fontSize: 11 },
+            valueFormatter: (val) => `$${Number(val).toFixed(2)}`
+        },
+        legend: {
+            data: ['Base Fee', 'Total Fee'],
+            icon: 'circle',
+            bottom: 0,
+            textStyle: { color: '#64748b', fontWeight: 'bold' }
+        },
+        grid: { left: '3%', right: '3%', bottom: '12%', top: '10%', containLabel: true },
+        xAxis: {
+            type: 'category',
+            data: feeDivergence.map(d => truncateLabel(d.name, 15)),
+            axisLine: { show: false },
+            axisTick: { show: false },
+            axisLabel: { color: '#64748b', fontSize: 11, fontWeight: 'bold', interval: 0 }
+        },
+        yAxis: {
+            type: 'value',
+            axisLine: { show: false },
+            axisTick: { show: false },
+            axisLabel: { color: '#64748b', fontSize: 11 },
+            splitLine: { lineStyle: { type: 'dashed', color: '#f1f5f9' } }
+        },
+        series: [
+            {
+                name: 'Base Fee',
+                type: 'bar',
+                barWidth: 16,
+                data: feeDivergence.map(d => d.base),
+                itemStyle: { color: '#94a3b8', borderRadius: [4, 4, 0, 0] }
+            },
+            {
+                name: 'Total Fee',
+                type: 'bar',
+                barWidth: 16,
+                data: feeDivergence.map(d => d.total),
+                itemStyle: { color: '#f59e0b', borderRadius: [4, 4, 0, 0] }
+            }
+        ]
+    }), [feeDivergence]);
+
+    const topPractitionersOption = useMemo(() => {
+        const reversedData = [...topPractitioners].reverse();
+        return {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: { type: 'shadow' },
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                borderRadius: 12,
+                borderWidth: 0,
+                shadowColor: 'rgba(0, 0, 0, 0.05)',
+                shadowBlur: 10,
+                textStyle: { color: '#334155', fontFamily: 'Inter, sans-serif', fontSize: 11 }
+            },
+            grid: { left: '3%', right: '8%', bottom: '3%', top: '3%', containLabel: true },
+            xAxis: { type: 'value', show: false },
+            yAxis: {
+                type: 'category',
+                data: reversedData.map(d => `MD - ${truncateLabel(d.name, 4)}`),
+                axisLine: { show: false },
+                axisTick: { show: false },
+                axisLabel: { color: '#64748b', fontSize: 10, fontWeight: 'bold', interval: 0 }
+            },
+            series: [
+                {
+                    name: 'Encounters',
+                    type: 'bar',
+                    barWidth: 10,
+                    data: reversedData.map(d => d.value),
+                    itemStyle: { color: '#14b8a6', borderRadius: [0, 4, 4, 0] }
+                }
+            ]
+        };
+    }, [topPractitioners]);
+
+    const costTrajectoryOption = useMemo(() => ({
+        tooltip: {
+            trigger: 'axis',
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            borderRadius: 12,
+            borderWidth: 0,
+            shadowColor: 'rgba(0, 0, 0, 0.05)',
+            shadowBlur: 10,
+            textStyle: { color: '#334155', fontFamily: 'Inter, sans-serif', fontSize: 11 },
+            valueFormatter: (value) => `$${Number(value).toFixed(2)}`
+        },
+        grid: { left: '3%', right: '3%', bottom: '5%', top: '10%', containLabel: true },
+        xAxis: {
+            type: 'category',
+            boundaryGap: false,
+            data: costTrajectory.map(d => d.name),
+            axisLine: { show: false },
+            axisTick: { show: false },
+            axisLabel: { color: '#94a3b8', fontSize: 11 }
+        },
+        yAxis: {
+            type: 'value',
+            axisLine: { show: false },
+            axisTick: { show: false },
+            axisLabel: { color: '#94a3b8', fontSize: 11, formatter: '${value}' },
+            splitLine: { lineStyle: { type: 'dashed', color: '#f1f5f9' } }
+        },
+        series: [
+            {
+                name: 'Avg OOP',
+                type: 'line',
+                smooth: true,
+                data: costTrajectory.map(d => d.value),
+                itemStyle: { color: '#f43f5e' },
+                lineStyle: { width: 3 },
+                symbol: 'circle',
+                symbolSize: 8
+            }
+        ]
+    }), [costTrajectory]);
+
+    const readmissionTimelineOption = useMemo(() => ({
+        tooltip: {
+            trigger: 'axis',
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            borderRadius: 12,
+            borderWidth: 0,
+            shadowColor: 'rgba(0, 0, 0, 0.05)',
+            shadowBlur: 10,
+            textStyle: { color: '#334155', fontFamily: 'Inter, sans-serif', fontSize: 11 }
+        },
+        legend: {
+            data: ['Unique Patients', 'Repeat Visitors'],
+            icon: 'circle',
+            bottom: 0,
+            textStyle: { color: '#64748b', fontWeight: 'bold' }
+        },
+        grid: { left: '3%', right: '3%', bottom: '12%', top: '10%', containLabel: true },
+        xAxis: {
+            type: 'category',
+            boundaryGap: false,
+            data: readmissionTimeline.map(d => d.name),
+            axisLine: { show: false },
+            axisTick: { show: false },
+            axisLabel: { color: '#94a3b8', fontSize: 11 }
+        },
+        yAxis: {
+            type: 'value',
+            axisLine: { show: false },
+            axisTick: { show: false },
+            axisLabel: { color: '#94a3b8', fontSize: 11 },
+            splitLine: { lineStyle: { type: 'dashed', color: '#f1f5f9' } }
+        },
+        series: [
+            {
+                name: 'Unique Patients',
+                type: 'line',
+                smooth: true,
+                showSymbol: false,
+                data: readmissionTimeline.map(d => d.unique_patients),
+                itemStyle: { color: '#14b8a6' },
+                lineStyle: { width: 2 },
+                areaStyle: {
+                    color: {
+                        type: 'linear',
+                        x: 0, y: 0, x2: 0, y2: 1,
+                        colorStops: [
+                            { offset: 0, color: 'rgba(20, 184, 166, 0.25)' },
+                            { offset: 1, color: 'rgba(20, 184, 166, 0)' }
+                        ]
+                    }
+                }
+            },
+            {
+                name: 'Repeat Visitors',
+                type: 'line',
+                smooth: true,
+                showSymbol: false,
+                data: readmissionTimeline.map(d => d.repeat_patients),
+                itemStyle: { color: '#f59e0b' },
+                lineStyle: { width: 2 },
+                areaStyle: {
+                    color: {
+                        type: 'linear',
+                        x: 0, y: 0, x2: 0, y2: 1,
+                        colorStops: [
+                            { offset: 0, color: 'rgba(245, 158, 11, 0.25)' },
+                            { offset: 1, color: 'rgba(245, 158, 11, 0)' }
+                        ]
+                    }
+                }
+            }
+        ]
+    }), [readmissionTimeline]);
+
+    const durationDistOption = useMemo(() => {
+        const colors = ['#6366f1', '#8b5cf6', '#d946ef', '#ec4899', '#f43f5e'];
+        return {
+            tooltip: {
+                trigger: 'axis',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                borderRadius: 12,
+                borderWidth: 0,
+                shadowColor: 'rgba(0, 0, 0, 0.05)',
+                shadowBlur: 10,
+                textStyle: { color: '#334155', fontFamily: 'Inter, sans-serif', fontSize: 11 },
+                valueFormatter: (value) => `${Number(value).toFixed(2)} hrs`
+            },
+            grid: { left: '3%', right: '3%', bottom: '15%', top: '10%', containLabel: true },
+            xAxis: {
+                type: 'category',
+                data: durationDist.map(d => truncateLabel(d.name, 12)),
+                axisLine: { show: false },
+                axisTick: { show: false },
+                axisLabel: { color: '#64748b', fontSize: 10, fontWeight: 'bold', rotate: 20, interval: 0 }
+            },
+            yAxis: {
+                type: 'value',
+                axisLine: { show: false },
+                axisTick: { show: false },
+                axisLabel: { color: '#94a3b8', fontSize: 11, formatter: '{value}h' },
+                splitLine: { lineStyle: { type: 'dashed', color: '#f1f5f9' } }
+            },
+            series: [
+                {
+                    name: 'Avg Duration',
+                    type: 'bar',
+                    barWidth: '40%',
+                    data: durationDist.map((d, index) => ({
+                        value: d.value,
+                        itemStyle: { color: colors[index % colors.length], borderRadius: [4, 4, 0, 0] }
+                    }))
+                }
+            ]
+        };
+    }, [durationDist]);
+
+    const anomalyIndexOption = useMemo(() => {
+        const reversedData = [...anomalyIndex].reverse();
+        return {
+            tooltip: {
+                trigger: 'axis',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                borderRadius: 12,
+                borderWidth: 0,
+                shadowColor: 'rgba(0, 0, 0, 0.05)',
+                shadowBlur: 10,
+                textStyle: { color: '#334155', fontFamily: 'Inter, sans-serif', fontSize: 11 }
+            },
+            grid: { left: '3%', right: '8%', bottom: '3%', top: '3%', containLabel: true },
+            xAxis: { type: 'value', show: false },
+            yAxis: {
+                type: 'category',
+                data: reversedData.map(d => truncateLabel(d.name, 22)),
+                axisLine: { show: false },
+                axisTick: { show: false },
+                axisLabel: { color: '#64748b', fontSize: 10, fontWeight: 'bold', interval: 0 }
+            },
+            series: [
+                {
+                    name: 'Anomalies Detected',
+                    type: 'bar',
+                    barWidth: 10,
+                    data: reversedData.map(d => d.value),
+                    itemStyle: { color: '#ffe4e6', borderRadius: [0, 4, 4, 0] }
+                },
+                {
+                    name: 'Alert Threshold',
+                    type: 'scatter',
+                    data: reversedData.map(d => d.value),
+                    itemStyle: { color: '#e11d48' },
+                    symbolSize: 10
+                }
+            ]
+        };
+    }, [anomalyIndex]);
 
 
     // --- KPI Configuration (8 Total) ---
@@ -234,15 +544,11 @@ const EncountersDashboard = () => {
 
                     <div className="lg:col-span-1">
                         <MetricsCard title="Top 10 Encounter Causes" metrics={[]} chartData={topCauses} chartType="bar" infoText="The most frequent medical conditions or reasons patients visited the hospital during the selected timeframe.">
-                            <ResponsiveContainer width="100%" height="100%" minHeight={350}>
-                                <BarChart layout="vertical" data={topCauses} margin={{ left: 20, right: 30, top: 10, bottom: 10 }}>
-                                    <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#f1f5f9" />
-                                    <XAxis type="number" hide />
-                                    <YAxis dataKey="name" type="category" width={180} tickFormatter={(val) => truncateLabel(val, 25)} tick={{ fontSize: 10, fontWeight: 600, fill: '#64748b' }} tickLine={false} axisLine={false} interval={0} />
-                                    <Tooltip cursor={{ fill: '#f8fafc' }} contentStyle={{ borderRadius: '12px', border: 'none' }} labelFormatter={(label, payload) => payload?.[0]?.payload?.name || label} />
-                                    <Bar dataKey="value" fill="#f43f5e" radius={[0, 4, 4, 0]} barSize={16} />
-                                </BarChart>
-                            </ResponsiveContainer>
+                            <ReactECharts
+                                option={topCausesOption}
+                                style={{ height: '350px', width: '100%' }}
+                                opts={{ renderer: 'svg' }}
+                            />
                         </MetricsCard>
                     </div>
 
@@ -273,31 +579,21 @@ const EncountersDashboard = () => {
 
                     <div className="lg:col-span-2">
                         <MetricsCard title="Fee Divergence by Encounter Type" metrics={[]} chartData={feeDivergence} chartType="bar" infoText="Difference between the standard base fee and the actual total fee charged, broken down by encounter type.">
-                            <ResponsiveContainer width="100%" height="100%" minHeight={300}>
-                                <BarChart data={feeDivergence} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                    <XAxis dataKey="name" tickFormatter={(val) => truncateLabel(val, 15)} tick={{ fontSize: 11, fill: '#64748b', fontWeight: 600 }} axisLine={false} tickLine={false} interval={0} />
-                                    <YAxis tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} />
-                                    <Tooltip cursor={{ fill: '#f8fafc' }} contentStyle={{ borderRadius: '12px', border: 'none' }} formatter={(value) => `$${Number(value).toFixed(2)} `} />
-                                    <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
-                                    <Bar dataKey="base" name="Base Fee" fill="#94a3b8" radius={[4, 4, 0, 0]} barSize={20} />
-                                    <Bar dataKey="total" name="Total Fee" fill="#f59e0b" radius={[4, 4, 0, 0]} barSize={20} />
-                                </BarChart>
-                            </ResponsiveContainer>
+                            <ReactECharts
+                                option={feeDivergenceOption}
+                                style={{ height: '300px', width: '100%' }}
+                                opts={{ renderer: 'svg' }}
+                            />
                         </MetricsCard>
                     </div>
 
                     <div className="lg:col-span-1">
                         <MetricsCard title="Top 10 Practitioners" metrics={[]} chartData={topPractitioners} chartType="bar" infoText="The medical practitioners with the highest volume of patient encounters.">
-                            <ResponsiveContainer width="100%" height="100%" minHeight={300}>
-                                <BarChart layout="vertical" data={topPractitioners} margin={{ left: 0, right: 30, top: 10, bottom: 10 }}>
-                                    <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#f1f5f9" />
-                                    <XAxis type="number" hide />
-                                    <YAxis dataKey="name" type="category" width={80} tickFormatter={(val) => `MD - ${truncateLabel(val, 4)} `} tick={{ fontSize: 10, fontWeight: 600, fill: '#64748b' }} tickLine={false} axisLine={false} interval={0} />
-                                    <Tooltip cursor={{ fill: '#f8fafc' }} contentStyle={{ borderRadius: '12px', border: 'none' }} labelFormatter={(label, payload) => `Practitioner ${payload?.[0]?.payload?.name || label} `} />
-                                    <Bar dataKey="value" name="Encounters" fill="#14b8a6" radius={[0, 4, 4, 0]} barSize={12} />
-                                </BarChart>
-                            </ResponsiveContainer>
+                            <ReactECharts
+                                option={topPractitionersOption}
+                                style={{ height: '300px', width: '100%' }}
+                                opts={{ renderer: 'svg' }}
+                            />
                         </MetricsCard>
                     </div>
 
@@ -330,15 +626,11 @@ const EncountersDashboard = () => {
                                 </div>
                             </div>
                             <div className="h-[300px] w-full">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <LineChart data={costTrajectory} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
-                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                        <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-                                        <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} tickFormatter={(val) => `$${val}`} width={55} />
-                                        <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }} formatter={(value) => [`$${Number(value).toFixed(2)}`, 'Avg OOP']} />
-                                        <Line type="monotone" dataKey="value" stroke="#f43f5e" strokeWidth={3} dot={{ r: 4, fill: "#f43f5e", strokeWidth: 2, stroke: "#fff" }} activeDot={{ r: 6 }} />
-                                    </LineChart>
-                                </ResponsiveContainer>
+                                <ReactECharts
+                                    option={costTrajectoryOption}
+                                    style={{ height: '100%', width: '100%' }}
+                                    opts={{ renderer: 'svg' }}
+                                />
                             </div>
                         </div>
 
@@ -362,27 +654,11 @@ const EncountersDashboard = () => {
                                 </div>
                             </div>
                             <div className="h-[300px] w-full">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <AreaChart data={readmissionTimeline} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
-                                        <defs>
-                                            <linearGradient id="colorUnique" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="5%" stopColor="#14b8a6" stopOpacity={0.8} />
-                                                <stop offset="95%" stopColor="#14b8a6" stopOpacity={0} />
-                                            </linearGradient>
-                                            <linearGradient id="colorRepeat" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.8} />
-                                                <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
-                                            </linearGradient>
-                                        </defs>
-                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                        <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-                                        <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} width={40} />
-                                        <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }} />
-                                        <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '8px' }} />
-                                        <Area type="monotone" dataKey="unique_patients" name="Unique Patients" stroke="#14b8a6" fillOpacity={1} fill="url(#colorUnique)" strokeWidth={2} />
-                                        <Area type="monotone" dataKey="repeat_patients" name="Repeat Visitors" stroke="#f59e0b" fillOpacity={1} fill="url(#colorRepeat)" strokeWidth={2} />
-                                    </AreaChart>
-                                </ResponsiveContainer>
+                                <ReactECharts
+                                    option={readmissionTimelineOption}
+                                    style={{ height: '100%', width: '100%' }}
+                                    opts={{ renderer: 'svg' }}
+                                />
                             </div>
                         </div>
 
@@ -406,19 +682,11 @@ const EncountersDashboard = () => {
                                 </div>
                             </div>
                             <div className="h-[300px] w-full">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={durationDist} margin={{ top: 5, right: 20, left: 10, bottom: 20 }}>
-                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                        <XAxis dataKey="name" tickFormatter={(val) => truncateLabel(val, 12)} tick={{ fontSize: 10, fill: '#64748b', fontWeight: 600 }} axisLine={false} tickLine={false} interval={0} angle={-20} textAnchor="end" />
-                                        <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} tickFormatter={(val) => `${val}h`} width={40} />
-                                        <Tooltip cursor={{ fill: '#f8fafc' }} contentStyle={{ borderRadius: '12px', border: 'none' }} formatter={(value) => [`${Number(value).toFixed(2)} hrs`, 'Avg Duration']} />
-                                        <Bar dataKey="value" fill="#8b5cf6" radius={[4, 4, 0, 0]} barSize={36}>
-                                            {durationDist.map((entry, index) => (
-                                                <Cell key={`cell-dur-${index}`} fill={['#6366f1', '#8b5cf6', '#d946ef', '#ec4899', '#f43f5e'][index % 5]} />
-                                            ))}
-                                        </Bar>
-                                    </BarChart>
-                                </ResponsiveContainer>
+                                <ReactECharts
+                                    option={durationDistOption}
+                                    style={{ height: '100%', width: '100%' }}
+                                    opts={{ renderer: 'svg' }}
+                                />
                             </div>
                         </div>
 
@@ -442,16 +710,11 @@ const EncountersDashboard = () => {
                                 </div>
                             </div>
                             <div className="h-[300px] w-full">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <ComposedChart layout="vertical" data={anomalyIndex} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
-                                        <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#f1f5f9" />
-                                        <XAxis type="number" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} hide />
-                                        <YAxis dataKey="name" type="category" width={150} tickFormatter={(val) => truncateLabel(val, 22)} tick={{ fontSize: 10, fontWeight: 600, fill: '#64748b' }} tickLine={false} axisLine={false} interval={0} />
-                                        <Tooltip cursor={{ fill: '#f8fafc' }} contentStyle={{ borderRadius: '12px', border: 'none' }} labelFormatter={(label, payload) => payload?.[0]?.payload?.name || label} formatter={(value) => [value, 'Anomalies Detected']} />
-                                        <Bar dataKey="value" barSize={14} fill="#ffe4e6" radius={[0, 4, 4, 0]} />
-                                        <Scatter dataKey="value" fill="#e11d48" />
-                                    </ComposedChart>
-                                </ResponsiveContainer>
+                                <ReactECharts
+                                    option={anomalyIndexOption}
+                                    style={{ height: '100%', width: '100%' }}
+                                    opts={{ renderer: 'svg' }}
+                                />
                             </div>
                         </div>
 

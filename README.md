@@ -43,6 +43,11 @@ The SarvSynth platform provides an integrated perspective on hospital operations
    SUPABASE_URL=your_endpoint_url
    SUPABASE_ANON_KEY=your_access_key
    VITE_APP_API_URL=http://127.0.0.1:3001
+
+   # Optional: Deploy Generation Jobs to GitHub Actions
+   GITHUB_TOKEN=your_github_personal_access_token
+   GITHUB_REPOSITORY=owner/repo_name
+   GITHUB_REF=main
    ```
 
 3. **Service Execution**:
