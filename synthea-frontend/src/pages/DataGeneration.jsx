@@ -86,8 +86,8 @@ const DataGeneration = () => {
                   <label className="block text-xs font-bold text-slate-500 uppercase mb-2 flex items-center gap-2">
                     <Users size={14} /> Number of Patients
                   </label>
-                  <input 
-                    type="number" 
+                  <input
+                    type="number"
                     value={numPatients}
                     onChange={(e) => setNumPatients(parseInt(e.target.value) || 0)}
                     placeholder="e.g. 150"
@@ -99,8 +99,8 @@ const DataGeneration = () => {
                   <label className="block text-xs font-bold text-slate-500 uppercase mb-2 flex items-center gap-2">
                     <MapPin size={14} /> Target State (Optional)
                   </label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value={stateName}
                     onChange={(e) => setStateName(e.target.value)}
                     placeholder="e.g. Massachusetts"

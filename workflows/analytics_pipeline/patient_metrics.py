@@ -116,13 +116,20 @@ async def calculateMetrics(df, supabase):
     end_date = coalesce(col("death_date"), current_date())
     df_age = df.withColumn("age", (datediff(end_date, col("birth_date"))/365.25).cast("int"))
 
-    working_class = df_age.filter((col("age") >= 20) & (col("age") <= 64)).count()
-    non_working_class = df_age.filter((col("age") < 20) | (col("age") > 64)).count()
-    econ_dep_ratio = int(((non_working_class) / (working_class if working_class > 0 else 1)) * 100)
+    df_alive = df.filter(col("death_date").isNull())
+    df_alive_age = df_alive.withColumn("age", (datediff(current_date(), col("birth_date"))/365.25).cast("int"))
 
-    race_df = df.groupBy("race").count()
-    race_df = race_df.withColumn("enhanced_count", (col("count") / df.count()) ** 2)
-    cult_div_score = int((1 - race_df.agg(spark_sum("enhanced_count")).first()[0]) * 100)
+    working_class = df_alive_age.filter((col("age") >= 20) & (col("age") <= 64)).count()
+    non_working_class = df_alive_age.filter((col("age") < 20) | (col("age") > 64)).count()
+    econ_dep_ratio = int((non_working_class / working_class) * 100) if working_class > 0 else 0
+
+    alive_count = df_alive.count()
+    if alive_count > 0:
+        race_df = df_alive.groupBy("race").count()
+        race_df = race_df.withColumn("enhanced_count", (col("count") / alive_count) ** 2)
+        cult_div_score = int((1 - race_df.agg(spark_sum("enhanced_count")).first()[0]) * 100)
+    else:
+        cult_div_score = 0
 
     deaths = df.filter(col("death_date").isNotNull()).count()
     mort_rate = builtins.round((deaths / df.count() * 100), 2) if df.count() > 0 else 0.0
