@@ -2,7 +2,7 @@ name: SarvSynth Data Pipeline
 
 on:
   schedule:
-    - cron: '0 0 */4 * *' # Every 4 days
+    - cron: '0 0 */10 * *' # Every 10 days
   workflow_dispatch:
     inputs:
       num_patients:
