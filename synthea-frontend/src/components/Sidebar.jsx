@@ -31,7 +31,7 @@ const Sidebar = ({ isOpen, setIsOpen, isMobile }) => {
         { name: 'Patient View', path: '/patient_dashboard', icon: Users },
         { name: 'Conditions', path: '/conditions_dashboard', icon: Activity },
         { name: 'Encounters', path: '/encounters_dashboard', icon: Stethoscope },
-        { name: 'Allergies', path: '/allergies_dashboard', icon: AlertCircle },
+        { name: 'Allergies', path: '/allergy_dashboard', icon: AlertCircle },
         { name: 'Data Generation', path: '/data_generation', icon: Database },
     ];
 

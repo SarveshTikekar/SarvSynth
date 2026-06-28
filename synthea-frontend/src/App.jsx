@@ -1,14 +1,14 @@
-import './App.css';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import Homepage from './pages/Homepage';
-import MainDashboard from './pages/MainDashboard';
-import DataGeneration from './pages/DataGeneration';
-import PatientDashboard from './pages/PatientDashboard';
+import "./App.css";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import Homepage from "./pages/Homepage";
+import MainDashboard from "./pages/MainDashboard";
+import DataGeneration from "./pages/DataGeneration";
+import PatientDashboard from "./pages/PatientDashboard";
 import ConditionsDashboard from "./pages/ConditionsDashboard";
-import AllergiesDashboard from './pages/AllergiesDashboard';
-import EncountersDashboard from './pages/EncountersDashboard';
-import Layout from './components/Layout';
-import ErrorPage from './pages/ErrorPage';
+import AllergiesDashboard from "./pages/AllergiesDashboard";
+import EncountersDashboard from "./pages/EncountersDashboard";
+import Layout from "./components/Layout";
+import ErrorPage from "./pages/ErrorPage";
 
 const router = createBrowserRouter([
   {
@@ -21,10 +21,10 @@ const router = createBrowserRouter([
       { path: "/data_generation", element: <DataGeneration /> },
       { path: "/patient_dashboard", element: <PatientDashboard /> },
       { path: "/conditions_dashboard", element: <ConditionsDashboard /> },
-      { path: "/allergies_dashboard", element: <AllergiesDashboard /> },
+      { path: "/allergy_dashboard", element: <AllergiesDashboard /> },
       { path: "/encounters_dashboard", element: <EncountersDashboard /> },
-    ]
-  }
+    ],
+  },
 ]);
 
 function App() {

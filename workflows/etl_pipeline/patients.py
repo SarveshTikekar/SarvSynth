@@ -72,7 +72,7 @@ async def etl(spark: SparkSession, supabase: AsyncClient):
         batch = data[i:i+batch_size]
 
         try:
-            response = await supabase.table("patients").upsert(batch).execute()
+            response = await supabase.table("patients").upsert(batch, on_conflict='uuid').execute()
 
         except Exception as e:
             raise Exception(f"Error inserting batch into Supabase: {e}")

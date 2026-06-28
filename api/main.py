@@ -206,5 +206,20 @@ def encounters_dashboard(supabase):
         'advanced_metrics': metrics.get('advanced_metrics', {})
     })
 
+@app.route('/api/allergy_dashboard', methods=['GET'])
+@with_supabase
+def allergy_dashboard(supabase):
+    """Fetch encounter metrics from Supabase"""
+    metrics = fetch_metrics(supabase, "allergies")
+    if not metrics:
+        return jsonify({'message': 'Data not found. Run analytics pipeline first.'}), 404
+    
+    return jsonify({
+        'message': 'Data Loaded successfully',
+        'kpis': metrics.get('kpis', {}),
+        'metrics': metrics.get('metrics', {}),
+        'advanced_metrics': metrics.get('advanced_metrics', {})
+    })
+    
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=3001, debug=True)

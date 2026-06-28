@@ -77,3 +77,17 @@ export const encountersDashboard = async () => {
 		return { message: 'error in generating metrics', reason: `${err}` }
 	}
 }
+
+export const allergyDashboard = async () => { 
+
+  try {
+		const resp = await axios.get(`${API_URL}/allergy_dashboard`)
+		if (resp.status == 200)
+			return { allergies_dashboard: resp.data }
+ 
+		return { message: 'error in generation', reason: `${resp.status} --> ${resp.statusText}` }
+ 
+	} catch (err) {
+		return { message: 'error in generating metrics', reason: `${err}` }
+	}
+ }

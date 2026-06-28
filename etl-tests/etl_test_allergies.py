@@ -1,46 +1,30 @@
-import asyncio
 import os
-from datetime import date, datetime, datetime_CAPI
-from uuid import uuid5
+from os.path import sep
 
-from pyspark.sql.functions import (
-    coalesce,
-    col,
-    current_date,
-    length,
-    lit,
-    regexp_extract,
-    to_date,
-    to_timestamp,
-    when,
-)
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import coalesce, col, length, regexp_extract, to_date, when
+
+os.environ["SPARK_LOCAL_IP"] = "127.0.0.1"
+os.environ["SPARK_LOCAL_HOSTNAME"] = "localhost"
 
 
-async def etl(spark, supabase):
-    """
-    Load transformed allergies data into Supabase, ensuring referential integrity.
-    """
-
-    # 1. Fetch valid patient UUIDs to avoid Foreign Key violations
-    print("Fetching valid patient UUIDs...")
-    response = await supabase.table("patients").select("uuid").execute()
-    valid_uuids = [row["uuid"] for row in response.data]
-
-    if not valid_uuids:
-        print("No patients found in database. Skipping the allergies ETL.")
-        return
-
-    # 2. Load and Transform Data
-    path = os.path.join(
-        os.path.dirname(__file__), "..", "..", "Datasets", "csv", "allergies.csv"
+def main():
+    spark = (
+        SparkSession.builder.appName("allergies-preview")
+        .master("local[*]")
+        .config("spark.driver.memory", "6g")
+        .config("spark.sql.shuffle.partitions", "8")
+        .config("spark.hadoop.fs.defaultFS", "file:///")
+        .getOrCreate()
     )
+
+    path = os.path.join(os.getcwd(), "..", "Datasets", "csv", "allergies.csv")
     if not os.path.exists(path):
         print(f"File not found: {path}")
         return
 
-    df = spark.read.csv(path, header=False, inferSchema=True)
+    df = spark.read.csv(path, header=True, inferSchema=True)
 
-    # Rename columns to match schema
     new_cols = [
         "allergy_detection_date",
         "allergy_cure_date",
@@ -62,12 +46,8 @@ async def etl(spark, supabase):
     for old_col, new_col in zip(df.columns, new_cols):
         df = df.withColumnRenamed(old_col, new_col)
 
-    # Drop placeholder and ensure types
     df = df.drop("_")
 
-    """
-        We start refining the data from here
-    """
     df = df.withColumn(
         "allergy_detection_date", to_date(col("allergy_detection_date"))
     ).withColumn("allergy_cure_date", coalesce(col("allergy_cure_date")))
@@ -126,11 +106,10 @@ async def etl(spark, supabase):
         )
     )
 
-    df = df.withColumn(
-        "primary_symptom_code", col("primary_symptom_code").cast("bigint")
-    ).withColumn("secondary_symptom_code", col("secondary_symptom_code").cast("bigint")).withColumn("allergy_code", col("allergy_code").cast("bigint"))
+    # df = df.withColumn(
+    #     "primary_symptom_code", col("primary_symptom_code").cast("int")
+    # ).withColumn("secondary_symptom_code", col("secondary_symptom_code").cast("int"))
 
-    # Replace the Null values in primary_symptom and secondary_symptom to 'N/A'
     list_ = [
         "primary_symptom_severity",
         "primary_symptom_description",
@@ -146,33 +125,25 @@ async def etl(spark, supabase):
         **{x: "N/A" for x in list_},
     }
     df = df.fillna(dict_)
-    df_filtered = df.filter(col("uuid").isin(valid_uuids))
-    
-    dropped_count = df.count() - df_filtered.count()
-    if dropped_count > 0:
-        print(
-            f"Dropped {dropped_count} allergy records as their UUID was not found in the patients table."
-        )
 
-    df_filtered = df_filtered.withColumn("allergy_detection_date", col("allergy_detection_date").cast("string")) \
-                             .withColumn("allergy_cure_date", col("allergy_cure_date").cast("string"))
+    # df = df.withColumn("allergy_record_uuid", uuid7())
 
-    data = [row.asDict() for row in df_filtered.collect()]
+    print(df.select("allergen_nature").show())
+    print(df.select("primary_symptom_nature").show())
+    print(df.select("secondary_symptom_nature").show())
 
-    batch_size = 250
-    for i in range(0, len(data), batch_size):
-        batch = data[i : i + batch_size]
-        try:
-            # Using upsert based on encounter_id
-            await (
-                supabase.table("allergies")
-                .upsert(batch, on_conflict="uuid,allergy_code")
-                .execute()
-            )
-        except Exception as e:
-            print(f"Error in batch {i // batch_size}: {e}")
-            continue
+    df.show(10, truncate=False)
+
+    col_list = df.columns
+    print(
+        *col_list,
+        "/n",
+        sep=", ",
+    )
 
     print(
-        f"The Allergies Automated ETL has been completed successfully at: {datetime.now().strftime('%Y-%m-%d %H:%M')}"
+        type(df["allergy_description"]), " and ", type(df.select("allergy_description"))
     )
+
+if __name__ == "__main__":
+    main()

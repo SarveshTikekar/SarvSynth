@@ -214,3 +214,6 @@ Datasets/
 
 #For synthea
 */synthea/
+
+# The agents file
+.agents/
