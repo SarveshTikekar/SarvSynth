@@ -11,7 +11,8 @@ import {
     X,
     ChevronLeft,
     ChevronRight,
-    Stethoscope
+    Stethoscope,
+    Map
 } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 
@@ -32,6 +33,7 @@ const Sidebar = ({ isOpen, setIsOpen, isMobile }) => {
         { name: 'Conditions', path: '/conditions_dashboard', icon: Activity },
         { name: 'Encounters', path: '/encounters_dashboard', icon: Stethoscope },
         { name: 'Allergies', path: '/allergy_dashboard', icon: AlertCircle },
+        { name: 'Geographic View', path: '/geographic_dashboard', icon: Map },
         { name: 'Data Generation', path: '/data_generation', icon: Database },
     ];
 

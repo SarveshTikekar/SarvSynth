@@ -7,6 +7,7 @@ import PatientDashboard from "./pages/PatientDashboard";
 import ConditionsDashboard from "./pages/ConditionsDashboard";
 import AllergiesDashboard from "./pages/AllergiesDashboard";
 import EncountersDashboard from "./pages/EncountersDashboard";
+import GeographicDashboard from "./pages/GeographicDashboard";
 import Layout from "./components/Layout";
 import ErrorPage from "./pages/ErrorPage";
 
@@ -23,6 +24,7 @@ const router = createBrowserRouter([
       { path: "/conditions_dashboard", element: <ConditionsDashboard /> },
       { path: "/allergy_dashboard", element: <AllergiesDashboard /> },
       { path: "/encounters_dashboard", element: <EncountersDashboard /> },
+      { path: "/geographic_dashboard", element: <GeographicDashboard /> },
     ],
   },
 ]);

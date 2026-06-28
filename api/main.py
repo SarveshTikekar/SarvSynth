@@ -219,7 +219,38 @@ def allergy_dashboard(supabase):
         'kpis': metrics.get('kpis', {}),
         'metrics': metrics.get('metrics', {}),
         'advanced_metrics': metrics.get('advanced_metrics', {})
-    })
+    })  
+
+@app.route('/api/geographic_dashboard', methods=['GET'])
+async def get_geographic_dashboard():
+    """Fetch geographic state-level KPIs dynamically, lazily and granularly by KPI ID"""
+    try:
+        kpi = request.args.get('kpi', default='total_patients', type=str)
+        
+        from workflows.supabase_builder import get_supabase_client
+        async with get_supabase_client() as supabase:
+            if kpi in ['total_patients', 'active_patient_rate', 'gender_balance_ratio', 'mean_family_income', 'median_family_income', 'avg_patient_age', 'married_rate', 'higher_education_rate']:
+                from api.utilities.patients.kpis import get_state_patient_kpis
+                data = await get_state_patient_kpis(kpi, supabase)
+            elif kpi in ['active_condition_burden', 'current_active_burden', 'global_recovery_rate', 'patient_complexity_score', 'avg_cure_time', 'average_time_to_cure', 'admission_rate_last_30_days', 'total_diagnoses', 'unique_conditions', 'chronic_condition_burden']:
+                from api.utilities.conditions.kpis import get_state_condition_kpis
+                data = await get_state_condition_kpis(kpi, supabase)
+            elif kpi in ['total_allergic_population', 'active_allergy_percentage', 'active_allergy_rate', 'severe_allergy_incidence_rate', 'severe_incident_rate', 'allergic_patient_rate', 'penicillin_allergy_delabeling_eligibility_rate', 'allergy_related_readmission_rate', 'poly_allergen_patient_rate', 'drug_hypersensitivity_rate']:
+                from api.utilities.allergies.kpis import get_state_allergy_kpis
+                data = await get_state_allergy_kpis(kpi, supabase)
+            elif kpi in ['total_visit_volume', 'total_revenue_generated', 'total_revenue', 'average_encounter_duration_hours', 'average_patient_out_of_pocket', 'avg_out_of_pocket', 'average_base_fee', 'total_covered_amount', 'insurer_covered', 'unique_patients_seen', 'average_practitioner_load', 'encounters_30d']:
+                from api.utilities.encounters.kpis import get_state_encounter_kpis
+                data = await get_state_encounter_kpis(kpi, supabase)
+            else:
+                return jsonify({'error': f'Invalid KPI ID: {kpi}'}), 400
+                
+        return jsonify({
+            'message': f'Geographic metrics for {kpi} loaded successfully',
+            'kpi': kpi,
+            'data': data
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
     
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=3001, debug=True)
