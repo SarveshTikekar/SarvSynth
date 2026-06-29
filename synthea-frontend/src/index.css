@@ -1,15 +1,15 @@
-@import url('https://fonts.googleapis.com/css2?family=Signika:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Vend+Sans:wght@400;500;700&display=swap');
 @import "tailwindcss";
 
 @layer base {
   :root {
-    --clinical-bg: #f8fafc;
-    --clinical-primary: #0f172a;
-    --clinical-accent: #0f766e; /* Deep Professional Teal */
+    --clinical-bg: #f3f4f6; /* Slate gray background */
+    --clinical-primary: #1f2937; /* Dark charcoal text */
+    --clinical-accent: #dde7c7; /* Sage green theme accent */
     --clinical-card-bg: #ffffff;
-    --clinical-border: #e2e8f0;
-    --clinical-text-main: #1e293b;
-    --clinical-text-muted: #475569;
+    --clinical-border: #d1d5db; /* Flat crisp gray borders */
+    --clinical-text-main: #374151; /* Dark gray */
+    --clinical-text-muted: #6b7280;
   }
 
   html,
@@ -19,20 +19,47 @@
     height: 100%;
     margin: 0;
     padding: 0;
-    overflow: hidden; /* Prevent double scrollbars on the root */
+    overflow: hidden;
     background-color: var(--clinical-bg);
   }
 
   body {
     color: var(--clinical-text-main);
-    font-family: 'Zalando Sans SemiExpanded', 'Signika', sans-serif;
+    font-family: 'Vend Sans', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Signika', sans-serif;
-    font-weight: 600;
+    font-family: 'Vend Sans', sans-serif;
+    font-weight: 700;
+  }
+
+  /* Global ERP Styles */
+  .bg-white, [class*="bg-white"] {
+    border-radius: 6px !important;
+    border: 1px solid var(--clinical-border) !important;
+    box-shadow: none !important;
+  }
+
+  button, select, input, a {
+    border-radius: 4px !important;
+  }
+
+  /* Color highlights for active items using #dde7c7 */
+  .bg-teal-50, .bg-teal-50\/70, .hover\:bg-teal-50:hover, .bg-teal-500, .bg-teal-600 {
+    background-color: rgba(221, 231, 199, 0.4) !important;
+    color: #1f2937 !important;
+    border-color: #c0cfab !important;
+  }
+
+  /* High contrast colors for text */
+  .text-teal-600, .text-teal-700, .group-hover\:text-teal-700, .text-teal-500 {
+    color: #3b5220 !important;
+  }
+
+  .border-teal-100, .border-teal-500, .hover\:border-teal-500 {
+    border-color: #c0cfab !important;
   }
 }
 

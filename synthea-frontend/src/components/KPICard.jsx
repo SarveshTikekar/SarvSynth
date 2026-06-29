@@ -34,69 +34,70 @@ const SingleKPICard = ({ kpi, index }) => {
   return (
     <div
       key={index}
-      className="group bg-white rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl hover:border-teal-100 transition-all duration-300 relative flex flex-col h-full"
+      className="group bg-white rounded border border-slate-200 hover:border-slate-300 transition-all duration-200 relative flex flex-row items-stretch p-4 h-full"
     >
-      {/* Background Icon Container */}
-      <div className="absolute inset-0 overflow-hidden rounded-[2rem] pointer-events-none">
-        <div className="absolute -bottom-2 -right-2 text-slate-50 opacity-10 group-hover:text-teal-500 transition-colors">
-          <Icon size={60} />
-        </div>
-      </div>
-
-      <div className="relative p-6 flex flex-col h-full min-h-full" style={{ overflow: 'visible' }}>
-        {/* Top Row: Icon & Delta Badge */}
-        <div className="flex items-start justify-between mb-4">
-          <div className={`p-3 rounded-2xl ${kpi.iconBg || 'bg-slate-50'} ${kpi.iconColor || 'text-slate-600'} transition-colors group-hover:bg-teal-500 group-hover:text-white`}>
-            <Icon size={20} />
-          </div>
-
-          {kpi.prevValue !== undefined && (
-            <div className={`flex items-center gap-0.5 px-2 py-1 rounded-lg text-[10px] font-black ${statusColor} ${statusBg} border border-white shadow-sm`}>
-              {isIncrease ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
-              {Math.abs(percentage).toFixed(1)}%
-            </div>
-          )}
-        </div>
-
-        {/* Label & Value */}
-        <div className="space-y-1 flex-1">
-            {kpi.infoText && (
-              <div className="absolute top-4 right-4 z-10 group/tooltip" style={{ overflow: 'visible' }}>
-                <Info size={14} className="text-slate-300 hover:text-teal-500 transition-colors cursor-help" />
-                <div className="absolute right-0 top-full mt-2 w-64 bg-slate-900/95 backdrop-blur-md text-white text-[11px] leading-relaxed rounded-2xl p-4 opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all z-[200] shadow-2xl pointer-events-none normal-case tracking-normal font-medium border border-white/10">
-                  <div className="absolute right-2 bottom-full w-0 h-0 border-l-8 border-r-8 border-b-8 border-transparent border-b-slate-900/95"></div>
-                  {kpi.infoText}
-                </div>
-              </div>
-            )}
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-              {kpi.title}
-            </p>
-          <h3 className="text-3xl font-black text-slate-900 tracking-tight">
+      {/* Left side: Main details (centralized value, title, comparison) */}
+      <div className="flex-1 flex flex-col justify-between pr-4">
+        <div>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
+            {kpi.title}
+          </p>
+          {/* Centralized main value, visible first */}
+          <h3 className="text-3xl font-black text-slate-900 tracking-tight mb-2">
             {typeof kpi.value === 'number' ? kpi.value.toLocaleString() : kpi.value}
           </h3>
         </div>
 
-        {/* Footer: Previous Period Info and timeframe toggle */}
-        <div className="mt-auto pt-4 border-t border-slate-50 flex items-center justify-between">
-          <p className="text-[10px] text-slate-400 font-medium">
+        {/* Bottom vs comparison */}
+        <div className="flex items-center gap-2 flex-wrap mt-auto">
+          <p className="text-[9px] text-slate-400 font-semibold">
             Vs. last <span className="lowercase">{activePeriodType}</span>:
             <span className="text-slate-700 font-bold ml-1">
               {activePrevValue.toLocaleString(undefined, { maximumFractionDigits: 1 })}
             </span>
           </p>
 
-          <div className="flex gap-1 bg-slate-100/50 p-0.5 rounded-lg border border-slate-200/50">
-            {[{ label: "W", val: "week" }, { label: "M", val: "month" }, { label: "Y", val: "year" }].map((tf) => (
-              <button
-                key={tf.val}
-                onClick={() => setTimeframe(tf.val)}
-                className={`px-1.5 py-0.5 rounded text-[9px] font-black uppercase transition-all ${timeframe === tf.val ? 'bg-white text-teal-600 shadow-sm border border-slate-200' : 'text-slate-400 hover:text-slate-700'}`}
-              >
-                {tf.label}
-              </button>
-            ))}
+          {kpi.prevValue !== undefined && (
+            <div className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-black ${statusColor} ${statusBg} border border-slate-100`}>
+              {isIncrease ? <ArrowUpRight size={10} /> : <ArrowDownRight size={10} />}
+              {Math.abs(percentage).toFixed(1)}%
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Right side: Icon and Vertical Timeframe Selection Stack */}
+      <div className="flex flex-col justify-between items-end border-l border-slate-100 pl-4 w-12 shrink-0">
+        {/* Tooltip Info icon */}
+        {kpi.infoText && (
+          <div className="absolute top-4 right-18 z-10 group/tooltip" style={{ overflow: 'visible' }}>
+            <Info size={14} className="text-slate-300 hover:text-teal-500 transition-colors cursor-help" />
+            <div className="absolute right-0 top-full mt-2 w-64 bg-slate-900/95 backdrop-blur-md text-white text-[11px] leading-relaxed rounded p-4 opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all z-[200] shadow-2xl pointer-events-none normal-case tracking-normal font-medium border border-white/10">
+              <div className="absolute right-2 bottom-full w-0 h-0 border-l-8 border-r-8 border-b-8 border-transparent border-b-slate-900/95"></div>
+              {kpi.infoText}
+            </div>
           </div>
+        )}
+
+        <div className={`p-2 rounded border border-slate-100 ${kpi.iconBg || 'bg-slate-50'} ${kpi.iconColor || 'text-slate-600'}`}>
+          <Icon size={16} />
+        </div>
+
+        {/* Vertical Stack: W, M, Y */}
+        <div className="flex flex-col gap-1 w-full mt-4">
+          {[{ label: "W", val: "week" }, { label: "M", val: "month" }, { label: "Y", val: "year" }].map((tf) => (
+            <button
+              key={tf.val}
+              onClick={() => setTimeframe(tf.val)}
+              className={`w-full py-1 text-center rounded text-[9px] font-black uppercase transition-all border cursor-pointer ${
+                timeframe === tf.val 
+                  ? 'bg-teal-50 border-teal-200 text-teal-700 shadow-sm font-bold' 
+                  : 'bg-white border-slate-200 text-slate-400 hover:text-slate-700 hover:bg-slate-50'
+              }`}
+            >
+              {tf.label}
+            </button>
+          ))}
         </div>
       </div>
     </div>

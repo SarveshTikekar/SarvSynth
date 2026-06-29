@@ -478,18 +478,6 @@ const EncountersDashboard = () => {
 
     return (
         <div className="animate-fade-in w-full">
-            <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 py-6 px-4 md:px-6 lg:px-8 sticky top-0 z-20 w-full">
-                <div className="max-w-[1600px] mx-auto w-full">
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className="p-2 bg-purple-50 rounded-lg">
-                            <BriefcaseMedical size={24} className="text-purple-600" />
-                        </div>
-                        <h1 className="text-3xl font-black text-slate-900 tracking-tight">Encounters Overview</h1>
-                    </div>
-                    <p className="text-slate-500 font-medium ml-12">Key statistics and trends for clinical encounters and operations.</p>
-                </div>
-            </header>
-
             <div className="max-w-[1600px] mx-auto w-full px-4 md:px-6 lg:px-8 py-8 space-y-10 pb-10">
                 {/* Section 1: 8 KPIs */}
                 <KPICard kpis={kpiData} />

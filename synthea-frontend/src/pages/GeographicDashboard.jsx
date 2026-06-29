@@ -387,14 +387,7 @@ const GeographicDashboard = () => {
         <div className="animate-fade-in w-full h-full flex flex-col bg-slate-50">
             {/* Header */}
             <header className="bg-white border-b border-slate-200 py-4 px-6 md:px-8 sticky top-0 z-20 w-full">
-                <div className="max-w-[1600px] mx-auto w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div>
-                        <h1 className="text-xl font-bold text-slate-800 tracking-tight flex items-center gap-2">
-                            <LayoutGrid className="text-teal-600" size={20} />
-                            Geographic Performance Analysis
-                        </h1>
-                        <p className="text-slate-400 text-xs font-semibold mt-0.5">Nationwide hospital KPI and growth rate distribution.</p>
-                    </div>
+                <div className="max-w-[1600px] mx-auto w-full flex flex-col sm:flex-row sm:items-center justify-end gap-4">
 
                     {/* Controls Row */}
                     <div className="flex items-center gap-4 flex-wrap">

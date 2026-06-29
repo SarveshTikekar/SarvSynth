@@ -26,15 +26,30 @@ const Sidebar = ({ isOpen, setIsOpen, isMobile }) => {
         }
     };
 
-    const navItems = [
-        { name: 'Home', path: '/', icon: Home },
-        { name: 'Main Dashboard', path: '/dashboard', icon: LayoutDashboard },
-        { name: 'Patient View', path: '/patient_dashboard', icon: Users },
-        { name: 'Conditions', path: '/conditions_dashboard', icon: Activity },
-        { name: 'Encounters', path: '/encounters_dashboard', icon: Stethoscope },
-        { name: 'Allergies', path: '/allergy_dashboard', icon: AlertCircle },
-        { name: 'Geographic View', path: '/geographic_dashboard', icon: Map },
-        { name: 'Data Generation', path: '/data_generation', icon: Database },
+    const categories = [
+        {
+            title: 'Overview',
+            items: [
+                { name: 'Home', path: '/', icon: Home },
+                { name: 'Main Dashboard', path: '/dashboard', icon: LayoutDashboard },
+                { name: 'Geographic View', path: '/geographic_dashboard', icon: Map },
+            ]
+        },
+        {
+            title: 'Medical Analytics',
+            items: [
+                { name: 'Patient View', path: '/patient_dashboard', icon: Users },
+                { name: 'Conditions', path: '/conditions_dashboard', icon: Activity },
+                { name: 'Encounters', path: '/encounters_dashboard', icon: Stethoscope },
+                { name: 'Allergies', path: '/allergy_dashboard', icon: AlertCircle },
+            ]
+        },
+        {
+            title: 'Management',
+            items: [
+                { name: 'Data Generation', path: '/data_generation', icon: Database },
+            ]
+        }
     ];
 
     const sidebarWidth = isCollapsed ? 'w-20' : 'w-64';
@@ -56,17 +71,21 @@ const Sidebar = ({ isOpen, setIsOpen, isMobile }) => {
                 {/* Header */}
                 <div className="h-20 flex items-center justify-between px-6 border-b border-slate-100">
                     {!isCollapsed && (
-                        <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-teal-50 rounded-lg flex items-center justify-center">
-                                <span className="font-bold text-teal-600">S</span>
+                        <div className="flex flex-col">
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 bg-teal-50 rounded-lg flex items-center justify-center">
+                                    <span className="font-black text-teal-600">S</span>
+                                </div>
+                                <span className="font-extrabold text-lg tracking-tight text-slate-800">
+                                    Sarv<span className="text-teal-700">Synth</span>
+                                </span>
                             </div>
-                            <span className="font-bold text-lg tracking-tight text-slate-800">Sarv<span className="text-teal-700">Synth</span></span>
                         </div>
                     )}
                     {isCollapsed && (
                         <div className="w-full flex justify-center">
                             <div className="w-8 h-8 bg-teal-50 rounded-lg flex items-center justify-center">
-                                <span className="font-bold text-teal-600">S</span>
+                                <span className="font-black text-teal-600">S</span>
                             </div>
                         </div>
                     )}
@@ -79,33 +98,44 @@ const Sidebar = ({ isOpen, setIsOpen, isMobile }) => {
                 </div>
 
                 {/* Navigation */}
-                <nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto">
-                    {navItems.map((item) => {
-                        const isActive = location.pathname === item.path;
-                        return (
-                            <NavLink
-                                key={item.path}
-                                to={item.path}
-                                onClick={() => isMobile && setIsOpen(false)}
-                                className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group
-                  ${isActive
-                                        ? 'bg-teal-50 text-teal-600 shadow-sm border border-teal-100'
-                                        : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700 hover:pl-4'}
-                `}
-                                title={isCollapsed ? item.name : ''}
-                            >
-                                <item.icon size={20} className={`min-w-[20px] ${isActive ? 'text-teal-600' : 'text-slate-400 group-hover:text-slate-600'}`} />
-                                {!isCollapsed && (
-                                    <span className="font-medium truncate">{item.name}</span>
-                                )}
+                <nav className="flex-1 py-6 px-3 space-y-6 overflow-y-auto custom-scrollbar">
+                    {categories.map((cat, catIdx) => (
+                        <div key={cat.title} className="space-y-1.5">
+                            {!isCollapsed && (
+                                <h3 className={`text-[10px] font-black uppercase text-slate-400 tracking-widest px-3 ${catIdx > 0 ? 'mt-4' : ''}`}>
+                                    {cat.title}
+                                </h3>
+                            )}
+                            <div className="space-y-1">
+                                {cat.items.map((item) => {
+                                    const isActive = location.pathname === item.path;
+                                    return (
+                                        <NavLink
+                                            key={item.path}
+                                            to={item.path}
+                                            onClick={() => isMobile && setIsOpen(false)}
+                                            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group
+                                                ${isActive
+                                                    ? 'bg-teal-50/70 text-teal-700 shadow-sm border border-teal-100/50'
+                                                    : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700 hover:pl-4'}
+                                            `}
+                                            title={isCollapsed ? item.name : ''}
+                                        >
+                                            <item.icon size={18} className={`min-w-[18px] ${isActive ? 'text-teal-600 font-extrabold' : 'text-slate-400 group-hover:text-slate-600'}`} />
+                                            {!isCollapsed && (
+                                                <span className="font-semibold text-xs truncate">{item.name}</span>
+                                            )}
 
-                                {/* Active Indicator */}
-                                {isActive && !isCollapsed && (
-                                    <div className="ml-auto w-1.5 h-1.5 rounded-full bg-teal-500" />
-                                )}
-                            </NavLink>
-                        );
-                    })}
+                                            {/* Active Indicator */}
+                                            {isActive && !isCollapsed && (
+                                                <div className="ml-auto w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" />
+                                            )}
+                                        </NavLink>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    ))}
                 </nav>
 
 

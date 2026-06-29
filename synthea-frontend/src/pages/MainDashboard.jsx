@@ -132,28 +132,6 @@ const MainDashboard = () => {
 
     return (
         <div className="animate-fade-in w-full">
-            {/* Header */}
-            <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 py-6 px-4 md:px-6 lg:px-8 sticky top-0 z-20 w-full">
-                <div className="flex justify-between items-center max-w-[1600px] mx-auto w-full">
-                    <div>
-                        <div className="flex items-center gap-3 mb-2">
-                            <div className="p-2 bg-rose-50 rounded-lg">
-                                <HeartPulse size={24} className="text-rose-500" />
-                            </div>
-                            <h1 className="text-3xl font-black text-slate-900 tracking-tight">
-                                Executive Overview
-                            </h1>
-                        </div>
-                        <p className="text-slate-500 font-medium ml-12">Aggregate statistics and metrics across all departments.</p>
-                    </div>
-                    <div className="hidden md:flex gap-3">
-                        <Link to="/data_generation" className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-bold hover:bg-slate-800 transition-colors shadow-lg shadow-slate-200">
-                            System Controls
-                        </Link>
-                    </div>
-                </div>
-            </header>
-
             <div className="max-w-[1600px] mx-auto w-full px-4 md:px-6 lg:px-8 py-8 space-y-8">
                 {/* KPI Grid */}
                 <KPICard kpis={kpiData} />

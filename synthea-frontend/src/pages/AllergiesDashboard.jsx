@@ -444,35 +444,13 @@ const AllergiesDashboard = () => {
 
 	return (
 		<div className="flex-1 overflow-y-auto bg-slate-50/50 p-6 space-y-6">
-			{/* Dashboard Title Header */}
-			<div className="flex flex-col gap-1 md:flex-row md:items-center md:justify-between border-b border-slate-100 pb-5">
-				<div>
-					<h1 className="text-2xl font-bold tracking-tight text-slate-800 flex items-center gap-2">
-						Allergy Surveillance Dashboard
-					</h1>
-					<p className="text-sm font-medium text-slate-400">
-						Surveillance of population-level hypersensitivities, drug de-labeling, and cross-reactivity mapping.
-					</p>
-				</div>
-				<div className="flex items-center gap-2 text-xs font-semibold text-slate-400 bg-white shadow-sm border border-slate-200/60 rounded-xl px-3 py-2 self-start md:self-auto">
-					<Calendar size={14} className="text-slate-400" />
-					<span>All-Time Benchmarked Data</span>
-				</div>
-			</div>
-
 			{/* KPI Section 1: Simple Metrics */}
 			<div className="space-y-3">
-				<h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5 animate-pulse">
-					<Heart size={13} className="text-teal-600" /> Core Allergy KPIs
-				</h2>
 				<KPICard kpis={coreKpis} />
 			</div>
 
 			{/* KPI Section 2: Complex / Clinical Metrics */}
 			<div className="space-y-3">
-				<h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5 animate-pulse">
-					<ShieldAlert size={13} className="text-rose-500" /> Advanced Clinical & Risk KPIs
-				</h2>
 				<KPICard kpis={clinicalKpis} />
 			</div>
 
